@@ -53,7 +53,7 @@ func usage() {
 	o.Flush()
 }
 
-func init() {
+func main() {
 	var err error
 	if len(os.Args) < 3 {
 		usage()
@@ -69,10 +69,6 @@ func init() {
 		fmt.Fprintf(os.Stderr, "unable to make sense of path: %v\n", err)
 		os.Exit(1)
 	}
-}
-
-func main() {
-	var err error
 	switch os.Args[1] {
 	case "keygen":
 		err = keygen()
