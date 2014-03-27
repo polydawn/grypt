@@ -14,6 +14,8 @@ import (
 func Decrypt(i io.Reader, o io.Writer, k Key) error {
 	header := Header{}
 	headBuf := new(bytes.Buffer)
+	decBuf := new(bytes.Buffer)
+	h := hmac.New(k.Scheme.Hash(), k.HMAC)
 	c, err := aes.NewCipher(k.Key)
 	if err != nil {
 		return fmt.Errorf("unabled to create aes cipher: %v", err)
@@ -31,13 +33,21 @@ func Decrypt(i io.Reader, o io.Writer, k Key) error {
 	if header.Scheme != k.Scheme {
 		return fmt.Errorf("key is unable to decrypt this data")
 	}
+	w := io.MultiWriter(decBuf, h)
 	s := cipher.StreamWriter{
 		S: cipher.NewCTR(c, header.MAC[:k.Scheme.BlockSize()]),
-		W: o,
+		W: w,
 	}
 
 	// read the encrypted file and decrypt
 	_, err = io.Copy(s, io.MultiReader(bytes.NewBuffer(rest), i))
+	if err != nil {
+		return err
+	}
+	if !hmac.Equal(header.MAC, h.Sum(nil)) {
+		return fmt.Errorf("unable to verify file")
+	}
+	_, err = io.Copy(o, decBuf)
 	return err
 }
 
@@ -56,7 +66,6 @@ func Encrypt(i io.Reader, o io.Writer, k Key) error {
 		return err
 	}
 	mac := h.Sum(nil)
-
 	s := cipher.StreamWriter{
 		S: cipher.NewCTR(c, mac[:k.Scheme.BlockSize()]),
 		W: o,
