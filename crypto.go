@@ -33,14 +33,14 @@ func Decrypt(i io.Reader, o io.Writer, k Key) error {
 	if header.Scheme != k.Scheme {
 		return fmt.Errorf("key is unable to decrypt this data")
 	}
-	w := io.MultiWriter(decBuf, h)
 	s := cipher.StreamWriter{
-		S: cipher.NewCTR(c, header.MAC[:k.Scheme.BlockSize()]),
-		W: w,
+		S: cipher.NewCTR(c, header.IV),
+		W: decBuf,
 	}
+	mw := io.MultiWriter(s, h)
 
 	// read the encrypted file and decrypt
-	_, err = io.Copy(s, io.MultiReader(bytes.NewBuffer(rest), i))
+	_, err = io.Copy(mw, io.MultiReader(bytes.NewBuffer(rest), i))
 	if err != nil {
 		return err
 	}
@@ -52,34 +52,42 @@ func Decrypt(i io.Reader, o io.Writer, k Key) error {
 }
 
 // Encrypt plaintext to ciphertext.
+//
+// TODO: meditate on improvements. There seems like one too many buffers.
 func Encrypt(i io.Reader, o io.Writer, k Key) error {
-	buf := new(bytes.Buffer)
+	plaintext := new(bytes.Buffer)
+	ciphertext := new(bytes.Buffer)
 	c, err := aes.NewCipher(k.Key)
 	if err != nil {
 		return err
 	}
-	h := hmac.New(k.Scheme.Hash(), k.HMAC)
-	w := io.MultiWriter(buf, h)
+	hmacIV := hmac.New(k.Scheme.Hash(), k.HMAC)
+	hmacMsg := hmac.New(k.Scheme.Hash(), k.HMAC)
+	mw := io.MultiWriter(plaintext, hmacIV)
 
-	// Read in the file, calculating the hmac and buffering it
-	if _, err := io.Copy(w, i); err != nil {
+	// Read in the file, calculating the IV and buffering it
+	if _, err := io.Copy(mw, i); err != nil {
 		return err
 	}
-	mac := h.Sum(nil)
-	s := cipher.StreamWriter{
-		S: cipher.NewCTR(c, mac[:k.Scheme.BlockSize()]),
-		W: o,
-	}
+	iv := hmacIV.Sum(nil)[:k.Scheme.BlockSize()]
 
-	// serialize our header and append the encrypted file
-	header, err := asn1.Marshal(Header{k.Scheme, mac})
+	// write ciphertext into buffer and the hmac
+	mw = io.MultiWriter(ciphertext, hmacMsg)
+	s := cipher.StreamWriter{
+		S: cipher.NewCTR(c, iv),
+		W: mw,
+	}
+	_, err = io.Copy(s, plaintext)
 	if err != nil {
 		return err
 	}
+
+	// serialize our header and append the encrypted file
+	header, err := asn1.Marshal(Header{k.Scheme, iv, hmacMsg.Sum(nil)})
 	_, err = o.Write(header)
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(s, buf)
+	_, err = io.Copy(o, ciphertext)
 	return err
 }

@@ -30,6 +30,7 @@ type (
 	// Header contains information about the encryption scheme
 	Header struct {
 		Scheme Scheme
+		IV     []byte
 		MAC    []byte
 	}
 )
