@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/asn1"
 	"encoding/base64"
+	"fmt"
 	"hash"
 	"io"
 	"os"
@@ -20,8 +21,12 @@ const (
 	AES256_Keccak256
 )
 
-// Scheme used for new keys. Currently not user tunable.
-var DefaultScheme = AES256_SHA256
+var (
+	// Scheme used for new keys.
+	DefaultScheme = AES256_SHA256
+	// The scheme indicated does not exist or is not supported.
+	ErrInvalidScheme = fmt.Errorf("invalid scheme")
+)
 
 type (
 	// Key is used for symmetric encryption in/out of the blob store
@@ -35,6 +40,16 @@ type (
 	// Encryption scheme
 	Scheme int
 )
+
+func ParseScheme(s string) (Scheme, error) {
+	switch s {
+	case "default", "aes256sha256":
+		return AES256_SHA256, nil
+	case "keccak", "aes256keccak256":
+		return AES256_Keccak256, nil
+	}
+	return Scheme(-1), ErrInvalidScheme
+}
 
 func (s Scheme) KeySize() int {
 	switch s {

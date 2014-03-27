@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"text/tabwriter"
 
 	"code.google.com/p/go.crypto/hkdf"
 )
@@ -23,6 +23,7 @@ var (
 	secretfile filter=grypt diff=grypt
 	*.secret filter=grypt diff=grypt
 `
+	encryptionScheme = flag.String("t", "default", "Which encryption scheme to use (only applicable to 'phrase' and 'keygen')")
 )
 
 type (
@@ -34,28 +35,33 @@ type (
 )
 
 func usage() {
-	o := new(tabwriter.Writer)
-	o.Init(os.Stdout, 0, 8, 0, '\t', 0)
 	fmt.Fprintf(os.Stderr, "Usage of %s:\n\n", os.Args[0])
-	fmt.Fprintf(os.Stderr, "%s SUBCOMMAND KEYFILE\n\n", os.Args[0])
-	fmt.Fprintln(o, "Subcommands:\n")
-	fmt.Fprintln(o, "help\tthis help")
-	fmt.Fprintln(o, "keygen\tcreate a new keyfile to put into KEYFILE")
-	fmt.Fprintln(o, "init\tprepare git repo to use KEYFILE")
-	fmt.Fprintln(o, "phrase\tprompts for a phrase to turn into a key")
-	fmt.Fprintln(o, "check\tchecks validity of key")
-	fmt.Fprintln(o)
-	fmt.Fprintln(o, "Plumbing commands (probably don't use):\n")
-	fmt.Fprintln(o, "clean\tgit clean filter")
-	fmt.Fprintln(o, "smudge\tgit smudge filter")
-	fmt.Fprintln(o, "diff\tdiff encrypted files")
-	fmt.Fprintln(o)
-	o.Flush()
+	fmt.Fprintf(os.Stderr, "%s [OPTIONS] SUBCOMMAND KEYFILE\n", os.Args[0])
+	fmt.Fprintln(os.Stderr, `
+SUBCOMMANDS:
+
+help    this help
+keygen  create a new keyfile to put into KEYFILE
+init    prepare git repo to use KEYFILE
+phrase  prompts for a phrase to turn into a key
+check   checks validity of key
+
+OPTIONS:
+`)
+	flag.PrintDefaults()
+	fmt.Fprintln(os.Stderr, `
+Valid encryption schemes are:
+
+ * AES256/SHA256     (default, aes256sha256)
+ * AES256/Keccak256  (keccak, aes256keccak256)
+`)
 }
 
 func main() {
+	flag.Usage = usage
+	flag.Parse()
 	var err error
-	if len(os.Args) < 3 {
+	if len(flag.Args()) < 1 {
 		usage()
 		os.Exit(1)
 	}
@@ -64,12 +70,17 @@ func main() {
 		fmt.Fprintf(os.Stderr, "unable to make sense of path: %v\n", err)
 		os.Exit(1)
 	}
-	keyfile, err = filepath.Abs(os.Args[2])
+	keyfile, err = filepath.Abs(flag.Arg(1))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to make sense of path: %v\n", err)
 		os.Exit(1)
 	}
-	switch os.Args[1] {
+	DefaultScheme, err = ParseScheme(*encryptionScheme)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to determine encryption scheme: %v", err)
+		os.Exit(2)
+	}
+	switch flag.Arg(0) {
 	case "keygen":
 		err = keygen()
 	case "check":
@@ -83,7 +94,7 @@ func main() {
 	case "smudge":
 		err = smudge()
 	case "diff":
-		err = diff(os.Args[3])
+		err = diff(flag.Arg(2))
 	default:
 		usage()
 		os.Exit(1)
