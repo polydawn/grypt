@@ -9,11 +9,15 @@ import (
 	"hash"
 	"io"
 	"os"
+
+	"code.google.com/p/go.crypto/sha3"
 )
 
 const (
 	// Use AES-256 with a SHA-256 HMAC
 	AES256_SHA256 Scheme = iota
+	// Use AES-256 with a Keccak-256 (SHA3) HMAC
+	AES256_Keccak256
 )
 
 // Scheme used for new keys. Currently not user tunable.
@@ -34,6 +38,8 @@ type (
 
 func (s Scheme) KeySize() int {
 	switch s {
+	case AES256_Keccak256:
+		fallthrough
 	case AES256_SHA256:
 		return 32
 	default:
@@ -43,6 +49,8 @@ func (s Scheme) KeySize() int {
 
 func (s Scheme) MACSize() int {
 	switch s {
+	case AES256_Keccak256:
+		fallthrough
 	case AES256_SHA256:
 		return 32
 	default:
@@ -52,6 +60,8 @@ func (s Scheme) MACSize() int {
 
 func (s Scheme) BlockSize() int {
 	switch s {
+	case AES256_Keccak256:
+		fallthrough
 	case AES256_SHA256:
 		return aes.BlockSize
 	default:
@@ -64,6 +74,8 @@ func (s Scheme) Hash() func() hash.Hash {
 	switch s {
 	case AES256_SHA256:
 		return sha256.New
+	case AES256_Keccak256:
+		return sha3.NewKeccak256
 	default:
 		panic("invalid Scheme")
 	}
