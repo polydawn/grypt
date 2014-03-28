@@ -30,7 +30,7 @@ func TestEncrypt(t *testing.T) {
 	t.Logf("%20s: %.75s...\n", "plaintext", hex.EncodeToString(plaintext))
 	for _, k := range keys {
 		buf := new(bytes.Buffer)
-		if err := Encrypt(bytes.NewBuffer(plaintext), buf, k); err != nil {
+		if err := Encrypt(bytes.NewReader(plaintext), buf, k); err != nil {
 			t.Fatal(err)
 		}
 		t.Logf("%20s: %.75s...\n", k.Scheme, hex.EncodeToString(buf.Bytes()))
@@ -43,7 +43,7 @@ func TestDecrypt(t *testing.T) {
 	t.Logf("%20s: %.75s...\n", "plaintext", hex.EncodeToString(plaintext))
 	for i, k := range keys {
 		x := new(bytes.Buffer)
-		if err := Decrypt(bytes.NewBuffer(out[i]), x, k); err != nil {
+		if err := Decrypt(bytes.NewReader(out[i]), x, k); err != nil {
 			t.Fatal(err)
 		}
 		t.Logf("%20s: %.75s...\n", k.Scheme, hex.EncodeToString(x.Bytes()))
