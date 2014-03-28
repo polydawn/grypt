@@ -9,13 +9,14 @@ import (
 )
 
 var (
-	out [][]byte
+	plaintextSize = 1024
+	out           [][]byte
 
-	plaintext = mkRand(1024)
+	plaintext = mkRand(plaintextSize)
 	keys      = []Key{
-		Key{AES256_SHA256, mkRand(32), mkRand(32)},
-		Key{AES256_Keccak256, mkRand(32), mkRand(32)},
-		Key{Blowfish448_SHA256, mkRand(56), mkRand(32)},
+		Key{AES256_SHA256, mkRand(AES256_SHA256.KeySize()), mkRand(AES256_SHA256.MACSize())},
+		Key{AES256_Keccak256, mkRand(AES256_Keccak256.KeySize()), mkRand(AES256_Keccak256.MACSize())},
+		Key{Blowfish448_SHA256, mkRand(Blowfish448_SHA256.KeySize()), mkRand(Blowfish448_SHA256.MACSize())},
 	}
 )
 
