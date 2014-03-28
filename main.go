@@ -23,7 +23,8 @@ var (
 	secretfile filter=grypt diff=grypt
 	*.secret filter=grypt diff=grypt
 `
-	encryptionScheme = flag.String("t", "default", "Which encryption scheme to use (only applicable to 'phrase' and 'keygen')")
+	encryptionScheme Scheme
+	schemeString     = flag.String("t", "default", "Which encryption scheme to use (only applicable to 'phrase' and 'keygen')")
 )
 
 type (
@@ -76,7 +77,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "unable to make sense of path: %v\n", err)
 		os.Exit(1)
 	}
-	DefaultScheme, err = ParseScheme(*encryptionScheme)
+	encryptionScheme, err = ParseScheme(*schemeString)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to determine encryption scheme: %v", err)
 		os.Exit(2)
@@ -108,7 +109,7 @@ func main() {
 }
 
 func keygen() error {
-	k, err := NewKey(rand.Reader)
+	k, err := NewKey(rand.Reader, encryptionScheme)
 	if err != nil {
 		return fmt.Errorf("failure generating key: %v", err)
 	}
@@ -117,7 +118,7 @@ func keygen() error {
 
 func keygenFromPhrase() error {
 	hkdf := hkdf.New(sha256.New, readPhrase(), nil, nil)
-	k, err := NewKey(hkdf)
+	k, err := NewKey(hkdf, encryptionScheme)
 	if err != nil {
 		return fmt.Errorf("failure generating key: %v", err)
 	}

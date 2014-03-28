@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/aes"
+	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/asn1"
 	"encoding/base64"
@@ -11,6 +12,7 @@ import (
 	"io"
 	"os"
 
+	"code.google.com/p/go.crypto/blowfish"
 	"code.google.com/p/go.crypto/sha3"
 )
 
@@ -19,6 +21,8 @@ const (
 	AES256_SHA256 Scheme = iota
 	// Use AES-256 with a Keccak-256 (SHA3) HMAC
 	AES256_Keccak256
+	// Use Blowfish-448 with a SHA-256 HMAC
+	Blowfish448_SHA256
 )
 
 var (
@@ -47,6 +51,8 @@ func ParseScheme(s string) (Scheme, error) {
 		return AES256_SHA256, nil
 	case "keccak", "aes256keccak256":
 		return AES256_Keccak256, nil
+	case "blowfish", "blowfish448sha256":
+		return Blowfish448_SHA256, nil
 	}
 	return Scheme(-1), ErrInvalidScheme
 }
@@ -57,6 +63,8 @@ func (s Scheme) KeySize() int {
 		fallthrough
 	case AES256_SHA256:
 		return 32
+	case Blowfish448_SHA256:
+		return 56
 	default:
 		panic("invalid Scheme")
 	}
@@ -64,6 +72,8 @@ func (s Scheme) KeySize() int {
 
 func (s Scheme) MACSize() int {
 	switch s {
+	case Blowfish448_SHA256:
+		fallthrough
 	case AES256_Keccak256:
 		fallthrough
 	case AES256_SHA256:
@@ -79,6 +89,22 @@ func (s Scheme) BlockSize() int {
 		fallthrough
 	case AES256_SHA256:
 		return aes.BlockSize
+	case Blowfish448_SHA256:
+		return blowfish.BlockSize
+	default:
+		panic("invalid Scheme")
+	}
+}
+
+// Returns a cipher.Block of the relevant cipher
+func (s Scheme) NewCipher(key []byte) (cipher.Block, error) {
+	switch s {
+	case AES256_Keccak256:
+		fallthrough
+	case AES256_SHA256:
+		return aes.NewCipher(key)
+	case Blowfish448_SHA256:
+		return blowfish.NewCipher(key)
 	default:
 		panic("invalid Scheme")
 	}
@@ -87,6 +113,8 @@ func (s Scheme) BlockSize() int {
 // Returns '.New' of the relevant hash package
 func (s Scheme) Hash() func() hash.Hash {
 	switch s {
+	case Blowfish448_SHA256:
+		fallthrough
 	case AES256_SHA256:
 		return sha256.New
 	case AES256_Keccak256:
