@@ -124,11 +124,24 @@ func (s Scheme) Hash() func() hash.Hash {
 	}
 }
 
+func (s Scheme) String() string {
+	switch s {
+	case Blowfish448_SHA256:
+		return "Blowfish-448/SHA-256"
+	case AES256_SHA256:
+		return "AES-256/SHA-256"
+	case AES256_Keccak256:
+		return "AES-256/Keccak-256"
+	default:
+		panic("invalid Scheme")
+	}
+}
+
 // return a Key from the supplied Reader
-func NewKey(r io.Reader) (Key, error) {
+func NewKey(r io.Reader, s Scheme) (Key, error) {
 	var err error
-	symKey := make([]byte, DefaultScheme.KeySize())
-	macKey := make([]byte, DefaultScheme.MACSize())
+	symKey := make([]byte, s.KeySize())
+	macKey := make([]byte, s.MACSize())
 	_, err = io.ReadFull(r, macKey)
 	if err != nil {
 		return Key{}, err
@@ -137,7 +150,7 @@ func NewKey(r io.Reader) (Key, error) {
 	if err != nil {
 		return Key{}, err
 	}
-	return Key{DefaultScheme, symKey, macKey}, nil
+	return Key{s, symKey, macKey}, nil
 }
 
 // base64 encode and write key 'k' to file 'f'

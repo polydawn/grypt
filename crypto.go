@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
 	"encoding/asn1"
@@ -24,9 +23,9 @@ func Decrypt(i io.Reader, o io.Writer, k Key) error {
 	headBuf := new(bytes.Buffer)
 	decBuf := new(bytes.Buffer)
 	h := hmac.New(k.Scheme.Hash(), k.HMAC)
-	c, err := aes.NewCipher(k.Key)
+	c, err := k.Scheme.NewCipher(k.Key)
 	if err != nil {
-		return fmt.Errorf("unabled to create aes cipher: %v", err)
+		return fmt.Errorf("unabled to create cipher: %v", err)
 	}
 
 	// Read a small chunk and try to parse the header
@@ -66,7 +65,7 @@ func Decrypt(i io.Reader, o io.Writer, k Key) error {
 func Encrypt(i io.Reader, o io.Writer, k Key) error {
 	plaintext := new(bytes.Buffer)
 	ciphertext := new(bytes.Buffer)
-	c, err := aes.NewCipher(k.Key)
+	c, err := k.Scheme.NewCipher(k.Key)
 	if err != nil {
 		return err
 	}
