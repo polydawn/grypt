@@ -5,7 +5,9 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"io"
+	"io/ioutil"
 	"testing"
+	"testing/iotest"
 )
 
 var (
@@ -49,6 +51,23 @@ func TestDecrypt(t *testing.T) {
 		t.Logf("%20s: %.75s...\n", k.Scheme, hex.EncodeToString(x.Bytes()))
 		if !bytes.Equal(plaintext, x.Bytes()) {
 			t.Fail()
+		}
+	}
+	return
+}
+
+func TestMACFailure(t *testing.T) {
+	for _, k := range keys {
+		var err error
+		buf := new(bytes.Buffer)
+		if err := Encrypt(bytes.NewReader(plaintext), iotest.TruncateWriter(buf, int64(plaintextSize-2)), k); err != nil {
+			t.Fatal(err)
+		}
+		if err = Decrypt(buf, ioutil.Discard, k); err == nil {
+			t.Logf("This should have errored! %s", k.Scheme)
+			t.Fail()
+		} else {
+			t.Logf("%20s: %v\n", k.Scheme, err)
 		}
 	}
 	return
