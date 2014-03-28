@@ -10,6 +10,14 @@ import (
 	"io"
 )
 
+/*
+The files we write/read have a small header tacked on (see type Header and
+key.go) that carries some emcryption scheme information and relevant nonces.
+
+The header format should probably stop changing once We are happy with how the
+encryption works.
+*/
+
 // Decrypt ciphertext into plaintext.
 func Decrypt(i io.Reader, o io.Writer, k Key) error {
 	header := Header{}
@@ -22,6 +30,7 @@ func Decrypt(i io.Reader, o io.Writer, k Key) error {
 	}
 
 	// Read a small chunk and try to parse the header
+	// This is an arbitrary number.
 	_, err = io.CopyN(headBuf, i, 1024)
 	if err != nil && err != io.EOF {
 		return fmt.Errorf("copyN error: %v", err)
