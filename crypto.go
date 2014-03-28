@@ -11,7 +11,7 @@ import (
 
 /*
 The files we write/read have a small header tacked on (see type Header and
-key.go) that carries some emcryption scheme information and relevant nonces.
+key.go) that carries some encryption scheme information and relevant nonces.
 
 The header format should probably stop changing once We are happy with how the
 encryption works.
