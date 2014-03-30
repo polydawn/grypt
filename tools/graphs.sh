@@ -23,7 +23,7 @@ else
 	tests="$1"
 fi
 
-go test -bench "$tests" git.polydawn.net/hank/grypt | sed '1d;$d' |
+go test -bench "$tests" .. | sed '1d;$d' |
 awk '{
 	sz=substr($1,match($1,/..$/))
 	sub(/K/,"",sz); sub(/M/,"*1024",sz)
