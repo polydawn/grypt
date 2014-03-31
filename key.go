@@ -14,6 +14,7 @@ import (
 
 	"code.google.com/p/go.crypto/blowfish"
 	"code.google.com/p/go.crypto/sha3"
+	"git.polydawn.net/hank/grypt/ext/blake2b"
 )
 
 const (
@@ -23,6 +24,10 @@ const (
 	AES256_Keccak256
 	// Use Blowfish-448 with a SHA-256 HMAC
 	Blowfish448_SHA256
+	// Use AES-265 with a BLAKE2-256 HMAC
+	AES256_BLAKE2256
+	// Use Blowfish-448 with a BLAKE2-512 HMAC
+	Blowfish448_BLAKE2512
 )
 
 var (
@@ -53,17 +58,19 @@ func ParseScheme(s string) (Scheme, error) {
 		return AES256_Keccak256, nil
 	case "blowfish", "blowfish448sha256":
 		return Blowfish448_SHA256, nil
+	case "blake2", "aes256blake2256":
+		return AES256_BLAKE2256, nil
+	case "blakefish", "blowfish448blake2512":
+		return Blowfish448_BLAKE2512, nil
 	}
 	return Scheme(-1), ErrInvalidScheme
 }
 
 func (s Scheme) KeySize() int {
 	switch s {
-	case AES256_Keccak256:
-		fallthrough
-	case AES256_SHA256:
+	case AES256_SHA256, AES256_Keccak256, AES256_BLAKE2256:
 		return 32
-	case Blowfish448_SHA256:
+	case Blowfish448_SHA256, Blowfish448_BLAKE2512:
 		return 56
 	default:
 		panic("invalid Scheme")
@@ -72,12 +79,10 @@ func (s Scheme) KeySize() int {
 
 func (s Scheme) MACSize() int {
 	switch s {
-	case Blowfish448_SHA256:
-		fallthrough
-	case AES256_Keccak256:
-		fallthrough
-	case AES256_SHA256:
+	case Blowfish448_SHA256, AES256_SHA256, AES256_Keccak256, AES256_BLAKE2256:
 		return 32
+	case Blowfish448_BLAKE2512:
+		return 64
 	default:
 		panic("invalid Scheme")
 	}
@@ -85,11 +90,9 @@ func (s Scheme) MACSize() int {
 
 func (s Scheme) BlockSize() int {
 	switch s {
-	case AES256_Keccak256:
-		fallthrough
-	case AES256_SHA256:
+	case AES256_SHA256, AES256_Keccak256, AES256_BLAKE2256:
 		return aes.BlockSize
-	case Blowfish448_SHA256:
+	case Blowfish448_SHA256, Blowfish448_BLAKE2512:
 		return blowfish.BlockSize
 	default:
 		panic("invalid Scheme")
@@ -99,11 +102,9 @@ func (s Scheme) BlockSize() int {
 // Returns a cipher.Block of the relevant cipher
 func (s Scheme) NewCipher(key []byte) (cipher.Block, error) {
 	switch s {
-	case AES256_Keccak256:
-		fallthrough
-	case AES256_SHA256:
+	case AES256_SHA256, AES256_Keccak256, AES256_BLAKE2256:
 		return aes.NewCipher(key)
-	case Blowfish448_SHA256:
+	case Blowfish448_SHA256, Blowfish448_BLAKE2512:
 		return blowfish.NewCipher(key)
 	default:
 		panic("invalid Scheme")
@@ -113,12 +114,14 @@ func (s Scheme) NewCipher(key []byte) (cipher.Block, error) {
 // Returns '.New' of the relevant hash package
 func (s Scheme) Hash() func() hash.Hash {
 	switch s {
-	case Blowfish448_SHA256:
-		fallthrough
-	case AES256_SHA256:
+	case Blowfish448_SHA256, AES256_SHA256:
 		return sha256.New
 	case AES256_Keccak256:
 		return sha3.NewKeccak256
+	case AES256_BLAKE2256:
+		return blake2b.New256
+	case Blowfish448_BLAKE2512:
+		return blake2b.New512
 	default:
 		panic("invalid Scheme")
 	}
@@ -132,6 +135,10 @@ func (s Scheme) String() string {
 		return "AES-256/SHA-256"
 	case AES256_Keccak256:
 		return "AES-256/Keccak-256"
+	case AES256_BLAKE2256:
+		return "AES-256/BLAKE2-256"
+	case Blowfish448_BLAKE2512:
+		return "Blowfish-448/BLAKE2-512"
 	default:
 		panic("invalid Scheme")
 	}
