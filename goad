@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Where is this script located?
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$DIR"
+export GOPATH="$PWD"/.gopath/
+export BASEDIR="$PWD"
+
+case "$1" in
+	build)
+		go build -o grypt
+		;;
+	test)
+		go test
+		;;
+	*)
+		echo "Usage: $0 {build|test}" 1>&2;
+		exit 1
+	;;
+esac
+
+

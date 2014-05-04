@@ -1,0 +1,3 @@
+[submodule ".gopath/src/code.google.com/p/go.crypto"]
+	path = .gopath/src/code.google.com/p/go.crypto
+	url = https://github.com/polydawn-ports/go.crypto.git
