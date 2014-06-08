@@ -14,7 +14,7 @@ import (
 
 	"code.google.com/p/go.crypto/blowfish"
 	"code.google.com/p/go.crypto/sha3"
-	"git.polydawn.net/hank/grypt/ext/blake2b"
+	"git.polydawn.net/polydawn/grypt/ext/blake2b"
 )
 
 const (
