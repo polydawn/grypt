@@ -54,8 +54,11 @@ OPTIONS:
 	fmt.Fprintln(os.Stderr, `
 Valid encryption schemes are:
 
- * AES256/SHA256     (default, aes256sha256)
- * AES256/Keccak256  (keccak, aes256keccak256)
+ * AES-256/SHA-256          (default, aes256sha256)
+ * AES-256/Keccak-256       (keccak, aes256keccak256)
+ * AES-256/BLAKE2-256       (blake2, aes256blake2256)
+ * Blowfish-448/SHA-256     (blowfish, blowfish448sha256)
+ * Blowfish-448/BLAKE2-512  (blakefish, blowfish448blake2512)
 `)
 }
 
