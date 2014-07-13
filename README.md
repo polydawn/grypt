@@ -6,7 +6,14 @@ Getting Started
 Here's an example to start a repository using grypt, assuming you're inside a
 repository.
 
+If you want a random key:
 	% grypt keygen .git/key
+
+If you want to derive a key from a passphrase (perhaps for easy sharing later):
+	% grypt phrase .git/key
+
+Note: run `keygen` or `phrase`, not both.
+
 	% grypt init .git/key
 
 grypt will print out a suggestion on what to enter in the repository's
