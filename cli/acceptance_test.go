@@ -17,6 +17,12 @@ func TestGenerateKey(t *testing.T) {
 			git("init")()
 			git("commit")("--allow-empty", "-m", "initial commit")()
 
+			Convey("There should be no evidence of grypt yet", func() {
+				_, err := os.Stat(".git/grypt/")
+				exists := err == nil || !os.IsNotExist(err)
+				So(exists, ShouldBeFalse)
+			})
+
 			Convey("When 'grypt generate-key' is called", func() {
 				cli.Run(
 					"grypt",
