@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"io/ioutil"
+	"path/filepath"
 	"os"
 )
 
@@ -30,6 +31,11 @@ func Hideme(fn func()) {
 	if err != nil {
 		panic(err)
 	}
+	tmpdir, err = filepath.Abs(tmpdir)
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(tmpdir)
 	err = os.Chdir(tmpdir)
 	if err != nil {
 		panic(err)
