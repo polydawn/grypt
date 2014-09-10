@@ -1,3 +1,6 @@
 [submodule ".gopath/src/code.google.com/p/go.crypto"]
 	path = .gopath/src/code.google.com/p/go.crypto
 	url = https://github.com/polydawn-ports/go.crypto.git
+[submodule ".gopath/src/github.com/codegangsta/cli"]
+	path = .gopath/src/github.com/codegangsta/cli
+	url = https://github.com/codegangsta/cli.git
