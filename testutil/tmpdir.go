@@ -2,8 +2,8 @@ package testutil
 
 import (
 	"io/ioutil"
-	"path/filepath"
 	"os"
+	"path/filepath"
 )
 
 func Hideme(fn func()) {
