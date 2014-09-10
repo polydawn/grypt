@@ -19,8 +19,9 @@ func TestGenerateKey(t *testing.T) {
 
 			Convey("When 'grypt generate-key' is called", func() {
 				cli.Run(
+					"grypt",
 					"generate-key",
-					"--passowrd", "asdf", // do not want interactive prompt to be hit in tests
+					"--password", "asdf", // do not want interactive prompt to be hit in tests
 				)
 
 				Convey("We should get a key file in the git data dir", func() {
