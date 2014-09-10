@@ -7,3 +7,6 @@
 [submodule ".gopath/src/polydawn.net/pogo"]
 	path = .gopath/src/polydawn.net/pogo
 	url = https://github.com/polydawn/pogo.git
+[submodule ".gopath/src/github.com/smartystreets/goconvey"]
+	path = .gopath/src/github.com/smartystreets/goconvey
+	url = https://github.com/smartystreets/goconvey.git
