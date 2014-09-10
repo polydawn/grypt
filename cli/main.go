@@ -46,7 +46,6 @@ func Run(args []string) {
 						 * Blowfish-448/BLAKE2-512  (blakefish, blowfish448blake2512)
 						`,
 					Value:  "aes256sha256",
-					EnvVar: "GRYPT_PASSWORD",
 				},
 			},
 			Action: func(c *cli.Context) {
