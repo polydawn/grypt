@@ -29,7 +29,7 @@ func TestGenerateKey(t *testing.T) {
 					// ridiculously verbose golang way to check if a file exists
 					// we should wrap up this up in a custom assertion, because we're gonna be doing it a lot: https://github.com/smartystreets/goconvey/wiki/Custom-Assertions
 					_, err := os.Stat(".git/grypt/default.key")
-					exists := err == nil || os.IsNotExist(err)
+					exists := err == nil || !os.IsNotExist(err)
 
 					So(exists, ShouldBeTrue)
 				})
