@@ -45,7 +45,7 @@ func Run(args []string) {
 						 * Blowfish-448/SHA-256     (blowfish, blowfish448sha256)
 						 * Blowfish-448/BLAKE2-512  (blakefish, blowfish448blake2512)
 						`,
-					Value:  "aes256sha256",
+					Value: "aes256sha256",
 				},
 			},
 			Action: func(c *cli.Context) {
