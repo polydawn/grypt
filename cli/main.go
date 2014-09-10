@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
+	grypt "polydawn.net/grypt"
 )
 
 func Run(args []string) {
@@ -14,7 +16,6 @@ func Run(args []string) {
 		{
 			Name:  "generate-key",
 			Usage: "generate a key used to lock and unlock secrets you ask grypt to keep.",
-			Action: func(c *cli.Context) { /* TODO */ },
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "keyring",
@@ -30,6 +31,19 @@ func Run(args []string) {
 					Usage:  "provide a password for generating the key.  if not provided, it will be prompted for interactively -- and this is the preferred mechanism, as this prevents your password from showing up trivially to others on the same machine in the output of commands like `ps`!  in grypt's default behavior, this password will be used to derive the symmetric key which will then encrypt your secrets; if combined with the '--random-key' option, this will instead cause the random key to be itself protected in another layer of symmetric encryption with a password-derived key (much like adding a password to ssh keys).",
 					EnvVar: "GRYPT_PASSWORD",
 				},
+			},
+			Action: func(c *cli.Context) {
+				encryptionScheme, err := grypt.ParseScheme(c.String("scheme"))
+				if err != nil {
+					panic(fmt.Sprintf("Unable to determine encryption scheme: %v", err))
+				}
+
+				GenerateKey(
+					c.String("keyring"),
+					c.Bool("random-key"),
+					c.String("password"),
+					encryptionScheme,
+				)
 			},
 		},
 		{
