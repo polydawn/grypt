@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"code.google.com/p/go.crypto/ssh/terminal"
 	"fmt"
 	"github.com/codegangsta/cli"
+	"os"
 	grypt "polydawn.net/grypt"
 )
 
@@ -38,10 +40,21 @@ func Run(args []string) {
 					panic(fmt.Sprintf("Unable to determine encryption scheme: %v", err))
 				}
 
+				password := []byte(c.String("password"))
+				if len(password) == 0 {
+					// interactive prompt
+					fmt.Fprintf(os.Stderr, "passphrase: ")
+					var err error
+					password, err = terminal.ReadPassword(0)
+					if err != nil {
+						panic(err)
+					}
+				}
+
 				GenerateKey(
 					c.String("keyring"),
 					c.Bool("random-key"),
-					c.String("password"),
+					password,
 					encryptionScheme,
 				)
 			},
