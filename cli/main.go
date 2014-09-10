@@ -8,7 +8,7 @@ import (
 	grypt "polydawn.net/grypt"
 )
 
-func Run(args []string) {
+func Run(args ...string) {
 	app := cli.NewApp()
 	app.Name = "grypt"
 	app.Usage = "grypt is a tool that allows you to store secrets in a git repository."

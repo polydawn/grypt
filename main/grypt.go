@@ -12,7 +12,7 @@ var EXIT_PANIC = 3
 func main() {
 	defer panicHandler()
 
-	cli.Run(os.Args)
+	cli.Run(os.Args...)
 }
 
 func panicHandler() {
