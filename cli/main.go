@@ -60,7 +60,7 @@ func Run(args []string) {
 					// interactive prompt
 					fmt.Fprintf(os.Stderr, "passphrase: ")
 					var err error
-					password, err = terminal.ReadPassword(0)
+					password, err = terminal.ReadPassword(0) // jesus christ this will leave your terminal fucked if you ctrl-c out of it -.- come on guise
 					if err != nil {
 						panic(err)
 					}
