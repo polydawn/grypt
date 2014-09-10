@@ -23,7 +23,7 @@ case "$1" in
 		git submodule update --init
 		;;
 	build)
-		go build -o $name $pkg
+		go build -o $name $pkg/main
 		;;
 	test)
 		go test -v "$SUBSECTION"
