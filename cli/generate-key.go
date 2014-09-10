@@ -6,7 +6,7 @@ import (
 	grypt "polydawn.net/grypt"
 )
 
-func GenerateKey(keyring string, random bool, password []byte, encryptionScheme grypt.Scheme) {
+func GenerateKey(ctx grypt.Context, keyring string, random bool, password []byte, encryptionScheme grypt.Scheme) {
 	k, err := grypt.NewKey(rand.Reader, encryptionScheme)
 	if err != nil {
 		panic(fmt.Errorf("failure generating key: %v", err))

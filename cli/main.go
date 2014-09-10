@@ -65,7 +65,10 @@ func Run(args []string) {
 					}
 				}
 
+				ctx := grypt.DetectContext()
+
 				GenerateKey(
+					ctx,
 					c.String("keyring"),
 					c.Bool("random-key"),
 					password,
