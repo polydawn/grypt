@@ -33,6 +33,21 @@ func Run(args []string) {
 					Usage:  "provide a password for generating the key.  if not provided, it will be prompted for interactively -- and this is the preferred mechanism, as this prevents your password from showing up trivially to others on the same machine in the output of commands like `ps`!  in grypt's default behavior, this password will be used to derive the symmetric key which will then encrypt your secrets; if combined with the '--random-key' option, this will instead cause the random key to be itself protected in another layer of symmetric encryption with a password-derived key (much like adding a password to ssh keys).",
 					EnvVar: "GRYPT_PASSWORD",
 				},
+				cli.StringFlag{
+					Name: "scheme",
+					Usage: `selects the encryption schema to use to keep your secrets.
+
+						Valid encryption schemes are:
+
+						 * AES-256/SHA-256          (default, aes256sha256)
+						 * AES-256/Keccak-256       (keccak, aes256keccak256)
+						 * AES-256/BLAKE2-256       (blake2, aes256blake2256)
+						 * Blowfish-448/SHA-256     (blowfish, blowfish448sha256)
+						 * Blowfish-448/BLAKE2-512  (blakefish, blowfish448blake2512)
+						`,
+					Value:  "aes256sha256",
+					EnvVar: "GRYPT_PASSWORD",
+				},
 			},
 			Action: func(c *cli.Context) {
 				encryptionScheme, err := grypt.ParseScheme(c.String("scheme"))
