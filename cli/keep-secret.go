@@ -6,5 +6,6 @@ import (
 )
 
 func KeepSecret(ctx grypt.Context, keyring string, files []string) {
-	gitutil.PutGitFilterConfig(ctx)
+	gitattrs := gitutil.ReadRepoGitAttribs(ctx)
+	println(gitattrs)
 }

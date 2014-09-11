@@ -4,6 +4,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"os"
 	"polydawn.net/grypt/cli"
+	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/testutil"
 	"polydawn.net/pogo/gosh"
 	"testing"
@@ -38,6 +39,38 @@ func TestGenerateKey(t *testing.T) {
 					exists := err == nil || !os.IsNotExist(err)
 
 					So(exists, ShouldBeTrue)
+				})
+			})
+		})
+	})
+}
+
+func TestKeepSecret(t *testing.T) {
+	testutil.Hideme(func() {
+		Convey("Given a new repo with grypt already past generate-key", t, func() {
+			git("init")()
+			git("commit")("--allow-empty", "-m", "initial commit")()
+			cli.Run(
+				"grypt",
+				"generate-key",
+				"--password", "asdf", // do not want interactive prompt to be hit in tests
+			)
+
+			Convey("When 'grypt keep-secret shadowfile' is called", func() {
+				cli.Run(
+					"grypt",
+					"keep-secret",
+					"shadowfile",
+				)
+
+				Convey("We should see gitattributes", func() {
+					_, err := os.Stat(".gitattributes")
+					exists := err == nil || !os.IsNotExist(err)
+					So(exists, ShouldBeTrue)
+
+					ga := gitutil.ReadGitAttribsFile(".gitattributes")
+					println(ga)
+					//So(ga.lines) // meh, visibility?
 				})
 			})
 		})
