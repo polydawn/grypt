@@ -42,6 +42,9 @@ case "$1" in
 			echo -e "\n\n\n"
 		done
 		;;
+	convey)
+		go install github.com/smartystreets/goconvey && "$GOPATH"/bin/goconvey
+		;;
 	*)
 		echo "Usage: $0 {init|build|test|install|fmt|doc}" 1>&2;
 		exit 1
