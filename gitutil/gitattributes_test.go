@@ -15,7 +15,7 @@ func TestGitattributesFiltering(t *testing.T) {
 		raw := []byte(strings.Join([]string{
 			"some/pattern/path k1=val1 k2=val2",
 			"",
-			"pattern2 ka=val1",
+			"pattern2\t\tka=val1",
 			"pattern3 kb=val1",
 			"lonely/pattern",
 		}, "\n"))
