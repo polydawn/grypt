@@ -12,11 +12,16 @@ import (
 
 func TestGitattributesFiltering(t *testing.T) {
 	Convey("Given some gitattributes string", t, func() {
-		ga := []byte(strings.Join([]string{
+		raw := []byte(strings.Join([]string{
 			"some/pattern/path k1=val1 k2=val2",
+			"",
+			"pattern2 ka=val1",
+			"pattern3 kb=val1",
+			"lonely/pattern",
 		}, "\n"))
 
-		Convey("There should be a new entry", func() {
+		Convey("The entries should be parsible", func() {
+			ga := ParseGitAttribs(raw)
 			// TODO finish
 			So(ga, ShouldBeTrue)
 		})
