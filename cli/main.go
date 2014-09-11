@@ -77,9 +77,8 @@ func Run(args ...string) {
 			},
 		},
 		{
-			Name:   "keep-secret",
-			Usage:  "tells grypt to keep this file a secret for you.",
-			Action: func(c *cli.Context) { /* TODO */ },
+			Name:  "keep-secret",
+			Usage: "tells grypt to keep this file a secret for you.",
 			// TODO: not sure how to get this cli library to generate help that hints there's a nonoptional positional argument.  might have to replace large swaths of their helptext template.
 			Flags: []cli.Flag{
 				cli.StringFlag{
@@ -87,6 +86,21 @@ func Run(args ...string) {
 					Value: "default",
 					Usage: "the keyring to use.  for example, you may wish to keep multiple secrets for one project, and lock some of them with a keyring for prod, and another with a keyring for dev.",
 				},
+			},
+			Action: func(c *cli.Context) {
+				// ick, because handling positional args manually is what i wanted to do
+				if len(c.Args()) == 0 {
+					panic("which files should we keep secret?")
+				}
+				files := c.Args()
+
+				ctx := grypt.DetectContext()
+
+				KeepSecret(
+					ctx,
+					c.String("keyring"),
+					files,
+				)
 			},
 		},
 		{
