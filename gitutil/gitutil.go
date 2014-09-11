@@ -39,3 +39,20 @@ func PutAttributesEntry(ctx grypt.Context) {
 		println(gapattern) // appease the golang compiler while i keep working -.-
 	}
 }
+
+
+/*
+	Manipulable view of a gitattributes file.
+
+	We track this as a string so that we can save it without causing diffs;
+	we are not necessarily the only actor in a gitattributes file.
+	This is inefficent, but gitattributes files are also realistically never expected to be
+	more than a few kilobytes, so multiple searches are not a cause for irritation.
+*/
+type gitattribs struct {
+	x byte[]
+}
+
+func (ga *gitattribs) PutGryptEntry(path string) {
+
+}
