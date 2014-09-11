@@ -30,5 +30,18 @@ func TestGitattributesFiltering(t *testing.T) {
 			So(ga.lines[3].pattern, ShouldEqual, "pattern3")
 			So(ga.lines[4].pattern, ShouldEqual, "lonely/pattern")
 		})
+
+		Convey("When putting grypt for an existing entry", func() {
+			ga := ParseGitAttribs(raw)
+			ga.PutGryptEntry("pattern2")
+
+			Convey("The number of lines should not change", func() {
+				So(len(ga.lines), ShouldEqual, 5)
+			})
+			Convey("The existing entry should now speak of grypt", func() {
+				So(ga.lines[2].pattern, ShouldEqual, "pattern2")
+				So(string(ga.lines[2].line), ShouldEqual, "pattern2 filter=grypt diff=grypt")
+			})
+		})
 	})
 }
