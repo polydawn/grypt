@@ -12,5 +12,5 @@ const exeName = "grypt" // not sure of the best way to make this more general.  
 func PutGitFilterConfig(ctx grypt.Context) {
 	git("config", "filter.grypt.smudge", fmt.Sprintf("%s git-smudge", exeName))()
 	git("config", "filter.grypt.clean", fmt.Sprintf("%s git-clean", exeName))()
-	git("config", "filter.grypt.textconv", fmt.Sprintf("%s git-textconv", exeName))()
+	git("config", "diff.grypt.textconv", fmt.Sprintf("%s git-textconv", exeName))()
 }
