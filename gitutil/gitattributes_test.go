@@ -22,8 +22,13 @@ func TestGitattributesFiltering(t *testing.T) {
 
 		Convey("The entries should be parsible", func() {
 			ga := ParseGitAttribs(raw)
-			// TODO finish
-			So(ga, ShouldBeTrue)
+
+			So(len(ga.lines), ShouldEqual, 5)
+			So(ga.lines[0].pattern, ShouldEqual, "some/pattern/path")
+			So(ga.lines[1].pattern, ShouldEqual, "")
+			So(ga.lines[2].pattern, ShouldEqual, "pattern2")
+			So(ga.lines[3].pattern, ShouldEqual, "pattern3")
+			So(ga.lines[4].pattern, ShouldEqual, "lonely/pattern")
 		})
 	})
 }
