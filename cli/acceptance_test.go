@@ -6,7 +6,6 @@ import (
 	"polydawn.net/grypt/cli"
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/testutil"
-	"polydawn.net/pogo/gosh"
 	"testing"
 )
 
@@ -75,8 +74,6 @@ func TestKeepSecret(t *testing.T) {
 
 				Convey("The secret file should be staged", func() {
 					// TODO
-					gosh.Sh("ls")("-la")(gosh.DefaultIO)()
-					gosh.Sh("git")("status")(gosh.DefaultIO)()
 					So(git("status", "--porcelain").Output(), ShouldEqual, "S .gitattributes\nS shadowfile\n")
 				})
 
