@@ -7,5 +7,8 @@ import (
 
 func KeepSecret(ctx grypt.Context, keyring string, files []string) {
 	gitattrs := gitutil.ReadRepoGitAttribs(ctx)
-	println(gitattrs)
+	for _, file := range files {
+		gitattrs.PutGryptEntry(file)
+	}
+	gitattrs.SaveRepoGitAttribs(ctx)
 }

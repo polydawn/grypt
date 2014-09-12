@@ -74,6 +74,24 @@ func ParseGitAttribs(raw []byte) *gitattribs {
 	return ga
 }
 
+func (ga *gitattribs) Marshall() []byte {
+	lines := make([][]byte, len(ga.lines))
+	for i, line := range ga.lines {
+		lines[i] = line.line // oh my god this naming is unfortunate
+	}
+	return bytes.Join(lines, br)
+}
+
+func (ga *gitattribs) SaveFile(filename string) {
+	if err := ioutil.WriteFile(filename, ga.Marshall(), 0644); err != nil {
+		panic(err)
+	}
+}
+
+func (ga *gitattribs) SaveRepoGitAttribs(ctx grypt.Context) {
+	ga.SaveFile(filepath.Join(ctx.RepoWorkDir, ".gitattributes"))
+}
+
 func (ga *gitattribs) PutGryptEntry(path string) {
 	// currently this is a naive implementation that assumes you have no other attributes for the files we're keeping secret; there is no attempt to retain existing attributes.
 	// also, god have mercy on your soul if your secret files have whitespace characters in their path.  afaict the format of gitattributes files is woefullly unprepared for that concept (though i'd love to be corrected).
