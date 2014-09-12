@@ -33,7 +33,7 @@ func PutGitFilterConfig(ctx grypt.Context) {
 	more than a few kilobytes, so multiple searches are not a cause for irritation.
 */
 type Gitattribs struct {
-	lines []GitattribLine
+	Lines []GitattribLine
 }
 
 type GitattribLine struct {
@@ -62,7 +62,7 @@ func ReadGitAttribsFile(filename string) *Gitattribs {
 func ParseGitAttribs(raw []byte) *Gitattribs {
 	rawLines := bytes.Split(raw, br)
 	ga := &Gitattribs{
-		lines: make([]GitattribLine, len(rawLines)),
+		Lines: make([]GitattribLine, len(rawLines)),
 	}
 	for i, line := range rawLines {
 		gapattern := rPattern.Find(line)
