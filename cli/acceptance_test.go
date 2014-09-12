@@ -70,7 +70,7 @@ func TestKeepSecret(t *testing.T) {
 
 					ga := gitutil.ReadGitAttribsFile(".gitattributes")
 					println(ga)
-					//So(ga.lines) // meh, visibility?
+					So(len(ga.lines), ShouldBeEqual, 1) // meh, visibility?
 				})
 			})
 		})
