@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-var git = gosh.Sh("git")
+//var git = gosh.Sh("git")
 
 func TestGenerateKey(t *testing.T) {
 	testutil.Hideme(func() {
@@ -71,6 +71,18 @@ func TestKeepSecret(t *testing.T) {
 					ga := gitutil.ReadGitAttribsFile(".gitattributes")
 					So(len(ga.Lines), ShouldEqual, 1)
 					So(ga.Lines[0].Pattern, ShouldEqual, "shadowfile")
+				})
+
+				Convey("The secret file should be staged", func() {
+					// TODO
+					gosh.Sh("ls")("-la")(gosh.DefaultIO)()
+					gosh.Sh("git")("status")(gosh.DefaultIO)()
+					So(git("status", "--porcelain").Output(), ShouldEqual, "S .gitattributes\nS shadowfile\n")
+				})
+
+				Convey("The diff should show the cleartext", func() {
+					// TODO
+					So(git("diff", "--raw").Output(), ShouldEqual, "")
 				})
 			})
 		})
