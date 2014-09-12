@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	grypt "polydawn.net/grypt"
 	"polydawn.net/pogo/gosh"
@@ -49,7 +50,11 @@ func ReadRepoGitAttribs(ctx grypt.Context) *gitattribs {
 func ReadGitAttribsFile(filename string) *gitattribs {
 	raw, err := ioutil.ReadFile(filename)
 	if err != nil {
-		panic(err)
+		if os.IsNotExist(err) {
+			return &gitattribs{}
+		} else {
+			panic(err)
+		}
 	}
 	return ParseGitAttribs(raw)
 }
