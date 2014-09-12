@@ -46,8 +46,8 @@ func TestGenerateKey(t *testing.T) {
 }
 
 func TestKeepSecret(t *testing.T) {
-	testutil.Hideme(func() {
-		Convey("Given a new repo with grypt already past generate-key", t, func() {
+	Convey("Given a new repo with grypt already past generate-key", t,
+		testutil.WithTmpdir(func() {
 			git("init")()
 			git("commit")("--allow-empty", "-m", "initial commit")()
 			cli.Run(
@@ -85,6 +85,6 @@ func TestKeepSecret(t *testing.T) {
 					So(git("diff", "--raw").Output(), ShouldEqual, "")
 				})
 			})
-		})
-	})
+		}),
+	)
 }
