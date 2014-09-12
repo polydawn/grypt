@@ -69,8 +69,8 @@ func TestKeepSecret(t *testing.T) {
 					So(exists, ShouldBeTrue)
 
 					ga := gitutil.ReadGitAttribsFile(".gitattributes")
-					println(ga)
 					So(len(ga.Lines), ShouldEqual, 1)
+					So(ga.Lines[0].Pattern, ShouldEqual, "shadowfile")
 				})
 			})
 		})
