@@ -143,7 +143,7 @@ func initRepo() error {
 	}
 
 	// check if repo is dirty
-	r = exec.Command("git", "-uno", "--porcelain")
+	r = exec.Command("git", "status", "-uno", "--porcelain")
 	o := new(bytes.Buffer)
 	r.Stdout = o
 	if r.Run(); o.Len() != 0 && hasHEAD {
