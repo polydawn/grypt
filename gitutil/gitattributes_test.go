@@ -24,11 +24,11 @@ func TestGitattributesFiltering(t *testing.T) {
 			ga := ParseGitAttribs(raw)
 
 			So(len(ga.lines), ShouldEqual, 5)
-			So(ga.lines[0].pattern, ShouldEqual, "some/pattern/path")
-			So(ga.lines[1].pattern, ShouldEqual, "")
-			So(ga.lines[2].pattern, ShouldEqual, "pattern2")
-			So(ga.lines[3].pattern, ShouldEqual, "pattern3")
-			So(ga.lines[4].pattern, ShouldEqual, "lonely/pattern")
+			So(ga.lines[0].Pattern, ShouldEqual, "some/pattern/path")
+			So(ga.lines[1].Pattern, ShouldEqual, "")
+			So(ga.lines[2].Pattern, ShouldEqual, "pattern2")
+			So(ga.lines[3].Pattern, ShouldEqual, "pattern3")
+			So(ga.lines[4].Pattern, ShouldEqual, "lonely/pattern")
 		})
 
 		Convey("When putting grypt for an existing entry", func() {
@@ -39,8 +39,8 @@ func TestGitattributesFiltering(t *testing.T) {
 				So(len(ga.lines), ShouldEqual, 5)
 			})
 			Convey("The existing entry should now speak of grypt", func() {
-				So(ga.lines[2].pattern, ShouldEqual, "pattern2")
-				So(string(ga.lines[2].line), ShouldEqual, "pattern2 filter=grypt diff=grypt")
+				So(ga.lines[2].Pattern, ShouldEqual, "pattern2")
+				So(string(ga.lines[2].Raw), ShouldEqual, "pattern2 filter=grypt diff=grypt")
 			})
 		})
 
@@ -52,8 +52,8 @@ func TestGitattributesFiltering(t *testing.T) {
 				So(len(ga.lines), ShouldEqual, 6)
 			})
 			Convey("The existing entry should now speak of grypt", func() {
-				So(ga.lines[5].pattern, ShouldEqual, "you/aint/never/seen")
-				So(string(ga.lines[5].line), ShouldEqual, "you/aint/never/seen filter=grypt diff=grypt")
+				So(ga.lines[5].Pattern, ShouldEqual, "you/aint/never/seen")
+				So(string(ga.lines[5].Raw), ShouldEqual, "you/aint/never/seen filter=grypt diff=grypt")
 			})
 		})
 	})

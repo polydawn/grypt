@@ -32,26 +32,26 @@ func PutGitFilterConfig(ctx grypt.Context) {
 	This is inefficent, but gitattributes files are also realistically never expected to be
 	more than a few kilobytes, so multiple searches are not a cause for irritation.
 */
-type gitattribs struct {
-	lines []gitattribLine
+type Gitattribs struct {
+	lines []GitattribLine
 }
 
-type gitattribLine struct {
-	pattern string // the first part of the line, which identifies the fileset the rule acts on.  may be nil.  called the pattern because that's what `man gitattributes` calls it.
-	line    []byte // the whole line in its original form (so we can save it again)
+type GitattribLine struct {
+	Pattern string // the first part of the line, which identifies the fileset the rule acts on.  may be nil.  called the pattern because that's what `man gitattributes` calls it.
+	Raw     []byte // the whole line in its original form (so we can save it again)
 }
 
 var rPattern, _ = regexp.Compile("^[^\\s]*")
 
-func ReadRepoGitAttribs(ctx grypt.Context) *gitattribs {
+func ReadRepoGitAttribs(ctx grypt.Context) *Gitattribs {
 	return ReadGitAttribsFile(filepath.Join(ctx.RepoWorkDir, ".gitattributes"))
 }
 
-func ReadGitAttribsFile(filename string) *gitattribs {
+func ReadGitAttribsFile(filename string) *Gitattribs {
 	raw, err := ioutil.ReadFile(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &gitattribs{}
+			return &Gitattribs{}
 		} else {
 			panic(err)
 		}
@@ -59,14 +59,14 @@ func ReadGitAttribsFile(filename string) *gitattribs {
 	return ParseGitAttribs(raw)
 }
 
-func ParseGitAttribs(raw []byte) *gitattribs {
+func ParseGitAttribs(raw []byte) *Gitattribs {
 	rawLines := bytes.Split(raw, br)
-	ga := &gitattribs{
-		lines: make([]gitattribLine, len(rawLines)),
+	ga := &Gitattribs{
+		lines: make([]GitattribLine, len(rawLines)),
 	}
 	for i, line := range rawLines {
 		gapattern := rPattern.Find(line)
-		ga.lines[i] = gitattribLine{
+		ga.lines[i] = GitattribLine{
 			pattern: string(gapattern),
 			line:    line,
 		}
@@ -74,33 +74,33 @@ func ParseGitAttribs(raw []byte) *gitattribs {
 	return ga
 }
 
-func (ga *gitattribs) Marshall() []byte {
+func (ga *Gitattribs) Marshall() []byte {
 	lines := make([][]byte, len(ga.lines))
 	for i, line := range ga.lines {
-		lines[i] = line.line // oh my god this naming is unfortunate
+		lines[i] = line.Raw
 	}
 	return bytes.Join(lines, br)
 }
 
-func (ga *gitattribs) SaveFile(filename string) {
+func (ga *Gitattribs) SaveFile(filename string) {
 	if err := ioutil.WriteFile(filename, ga.Marshall(), 0644); err != nil {
 		panic(err)
 	}
 }
 
-func (ga *gitattribs) SaveRepoGitAttribs(ctx grypt.Context) {
+func (ga *Gitattribs) SaveRepoGitAttribs(ctx grypt.Context) {
 	ga.SaveFile(filepath.Join(ctx.RepoWorkDir, ".gitattributes"))
 }
 
-func (ga *gitattribs) PutGryptEntry(path string) {
+func (ga *Gitattribs) PutGryptEntry(path string) {
 	// currently this is a naive implementation that assumes you have no other attributes for the files we're keeping secret; there is no attempt to retain existing attributes.
 	// also, god have mercy on your soul if your secret files have whitespace characters in their path.  afaict the format of gitattributes files is woefullly unprepared for that concept (though i'd love to be corrected).
 	putLine := []byte(fmt.Sprintf("%s filter=grypt diff=grypt", path))
 	for i, line := range ga.lines {
-		if line.pattern == path {
-			ga.lines[i].line = putLine
+		if line.Pattern == path {
+			ga.lines[i].Raw = putLine
 			return
 		}
 	}
-	ga.lines = append(ga.lines, gitattribLine{pattern: path, line: putLine})
+	ga.lines = append(ga.lines, GitattribLine{pattern: path, line: putLine})
 }
