@@ -70,11 +70,7 @@ func main() {
 		usage()
 		os.Exit(1)
 	}
-	exe, err = filepath.Abs(os.Args[0])
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "unable to make sense of path: %v\n", err)
-		os.Exit(1)
-	}
+	exe = os.Args[0]
 	keyfile, err = filepath.Abs(flag.Arg(1))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to make sense of path: %v\n", err)

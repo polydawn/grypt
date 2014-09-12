@@ -6,15 +6,44 @@ cd "$DIR"
 export GOPATH="$PWD"/.gopath/
 export BASEDIR="$PWD"
 
+
+# subsection arg?
+[ -z "$2" ] && SUBSECTION="./..." || SUBSECTION="./$2"
+
+
+# Project details
+pkg="polydawn.net/grypt"
+name="grypt"
+
+
 case "$1" in
+	init)
+		# it's your responsibility to do this the first time
+		# (we don't do it at the front of every build because it will move submodules if you already have them, and that might not be what you want as you're plowing along)
+		git submodule update --init
+		;;
 	build)
-		go build -o grypt
+		go build -o $name $pkg
 		;;
 	test)
-		go test
+		go test -v "$SUBSECTION"
+		;;
+	install)
+		go install $pkg
+		;;
+	fmt)
+		go fmt "$SUBSECTION"
+		;;
+	doc)
+		[ -z "$2" ] && packages=`for dir in */; do find "$dir" -type d; done` || packages="$2"
+		for package in $packages; do
+			echo -e "==== $package ====\n"
+			godoc $pkg/$package
+			echo -e "\n\n\n"
+		done
 		;;
 	*)
-		echo "Usage: $0 {build|test}" 1>&2;
+		echo "Usage: $0 {init|build|test|install|fmt|doc}" 1>&2;
 		exit 1
 	;;
 esac
