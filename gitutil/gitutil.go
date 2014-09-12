@@ -66,7 +66,7 @@ func ParseGitAttribs(raw []byte) *Gitattribs {
 	}
 	for i, line := range rawLines {
 		gapattern := rPattern.Find(line)
-		ga.lines[i] = GitattribLine{
+		ga.Lines[i] = GitattribLine{
 			Pattern: string(gapattern),
 			Raw:     line,
 		}
@@ -75,8 +75,8 @@ func ParseGitAttribs(raw []byte) *Gitattribs {
 }
 
 func (ga *Gitattribs) Marshall() []byte {
-	lines := make([][]byte, len(ga.lines))
-	for i, line := range ga.lines {
+	lines := make([][]byte, len(ga.Lines))
+	for i, line := range ga.Lines {
 		lines[i] = line.Raw
 	}
 	return bytes.Join(lines, br)
@@ -96,11 +96,11 @@ func (ga *Gitattribs) PutGryptEntry(path string) {
 	// currently this is a naive implementation that assumes you have no other attributes for the files we're keeping secret; there is no attempt to retain existing attributes.
 	// also, god have mercy on your soul if your secret files have whitespace characters in their path.  afaict the format of gitattributes files is woefullly unprepared for that concept (though i'd love to be corrected).
 	putLine := []byte(fmt.Sprintf("%s filter=grypt diff=grypt", path))
-	for i, line := range ga.lines {
+	for i, line := range ga.Lines {
 		if line.Pattern == path {
-			ga.lines[i].Raw = putLine
+			ga.Lines[i].Raw = putLine
 			return
 		}
 	}
-	ga.lines = append(ga.lines, GitattribLine{Pattern: path, Raw: putLine})
+	ga.Lines = append(ga.Lines, GitattribLine{Pattern: path, Raw: putLine})
 }

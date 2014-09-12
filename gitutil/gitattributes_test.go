@@ -23,12 +23,12 @@ func TestGitattributesFiltering(t *testing.T) {
 		Convey("The entries should be parsible", func() {
 			ga := ParseGitAttribs(raw)
 
-			So(len(ga.lines), ShouldEqual, 5)
-			So(ga.lines[0].Pattern, ShouldEqual, "some/pattern/path")
-			So(ga.lines[1].Pattern, ShouldEqual, "")
-			So(ga.lines[2].Pattern, ShouldEqual, "pattern2")
-			So(ga.lines[3].Pattern, ShouldEqual, "pattern3")
-			So(ga.lines[4].Pattern, ShouldEqual, "lonely/pattern")
+			So(len(ga.Lines), ShouldEqual, 5)
+			So(ga.Lines[0].Pattern, ShouldEqual, "some/pattern/path")
+			So(ga.Lines[1].Pattern, ShouldEqual, "")
+			So(ga.Lines[2].Pattern, ShouldEqual, "pattern2")
+			So(ga.Lines[3].Pattern, ShouldEqual, "pattern3")
+			So(ga.Lines[4].Pattern, ShouldEqual, "lonely/pattern")
 		})
 
 		Convey("When putting grypt for an existing entry", func() {
@@ -36,11 +36,11 @@ func TestGitattributesFiltering(t *testing.T) {
 			ga.PutGryptEntry("pattern2")
 
 			Convey("The number of lines should not change", func() {
-				So(len(ga.lines), ShouldEqual, 5)
+				So(len(ga.Lines), ShouldEqual, 5)
 			})
 			Convey("The existing entry should now speak of grypt", func() {
-				So(ga.lines[2].Pattern, ShouldEqual, "pattern2")
-				So(string(ga.lines[2].Raw), ShouldEqual, "pattern2 filter=grypt diff=grypt")
+				So(ga.Lines[2].Pattern, ShouldEqual, "pattern2")
+				So(string(ga.Lines[2].Raw), ShouldEqual, "pattern2 filter=grypt diff=grypt")
 			})
 		})
 
@@ -49,11 +49,11 @@ func TestGitattributesFiltering(t *testing.T) {
 			ga.PutGryptEntry("you/aint/never/seen")
 
 			Convey("The number of lines should increment", func() {
-				So(len(ga.lines), ShouldEqual, 6)
+				So(len(ga.Lines), ShouldEqual, 6)
 			})
 			Convey("The existing entry should now speak of grypt", func() {
-				So(ga.lines[5].Pattern, ShouldEqual, "you/aint/never/seen")
-				So(string(ga.lines[5].Raw), ShouldEqual, "you/aint/never/seen filter=grypt diff=grypt")
+				So(ga.Lines[5].Pattern, ShouldEqual, "you/aint/never/seen")
+				So(string(ga.Lines[5].Raw), ShouldEqual, "you/aint/never/seen filter=grypt diff=grypt")
 			})
 		})
 	})
