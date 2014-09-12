@@ -67,8 +67,8 @@ func ParseGitAttribs(raw []byte) *Gitattribs {
 	for i, line := range rawLines {
 		gapattern := rPattern.Find(line)
 		ga.lines[i] = GitattribLine{
-			pattern: string(gapattern),
-			line:    line,
+			Pattern: string(gapattern),
+			Raw:     line,
 		}
 	}
 	return ga
@@ -102,5 +102,5 @@ func (ga *Gitattribs) PutGryptEntry(path string) {
 			return
 		}
 	}
-	ga.lines = append(ga.lines, GitattribLine{pattern: path, line: putLine})
+	ga.lines = append(ga.lines, GitattribLine{Pattern: path, Raw: putLine})
 }
