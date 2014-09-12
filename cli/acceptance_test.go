@@ -74,7 +74,7 @@ func TestKeepSecret(t *testing.T) {
 
 				Convey("The secret file should be staged", func() {
 					// TODO
-					So(git("status", "--porcelain").Output(), ShouldEqual, "S .gitattributes\nS shadowfile\n")
+					So(git("status", "--porcelain").Output(), ShouldEqual, "A  .gitattributes\nA  shadowfile\n")
 				})
 
 				Convey("The diff should show the cleartext", func() {
