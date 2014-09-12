@@ -2,10 +2,12 @@ package cli
 
 import (
 	. "github.com/smartystreets/goconvey/convey"
+	"io/ioutil"
 	"os"
 	"polydawn.net/grypt/cli"
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/testutil"
+	"polydawn.net/pogo/gosh"
 	"testing"
 )
 
@@ -56,6 +58,8 @@ func TestKeepSecret(t *testing.T) {
 			)
 
 			Convey("When 'grypt keep-secret shadowfile' is called", func() {
+				err := ioutil.WriteFile("shadowfile", []byte("cleartext"), 0644)
+				So(err, ShouldBeNil)
 				cli.Run(
 					"grypt",
 					"keep-secret",
@@ -78,7 +82,13 @@ func TestKeepSecret(t *testing.T) {
 				})
 
 				Convey("The diff should show the cleartext", func() {
-					// TODO
+					println("------")
+					git("diff", "--staged", "--no-color", "shadowfile")(gosh.DefaultIO)()
+					println("------")
+
+					// staged diff should have our bby
+					So(git("diff", "--staged", "--raw", "shadowfile").Output(), ShouldEqual, "cleartext")
+					// no unstaged changes should be around
 					So(git("diff", "--raw").Output(), ShouldEqual, "")
 				})
 			})
