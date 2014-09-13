@@ -20,3 +20,5 @@ func DetectContext() Context {
 	c.RepoWorkDir = c.RepoWorkDir[0 : len(c.RepoWorkDir)-1]      // there's a trailing '\n' on the output of rev-parse.  remove it.
 	return c
 }
+
+// TODO: this needs some tests itself to make sure it does something meaningful in an empty dir.
