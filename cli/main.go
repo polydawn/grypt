@@ -9,11 +9,28 @@ import (
 )
 
 func Run(args ...string) {
+	// first sack-n-grab on any subcommands that are the plumbing for git.
+	// we don't run these through the main cli system because they're not complex enough to need it and we don't actually really want help text for these.
+	if len(args) > 0 {
+		// FIXME: don't know how to do keyring setup yet.  probably something with extra tuples tossed into gitattributes at the time of keep-secret.
+		switch args[0] {
+		case "git-clean":
+			PlumbingClean("default")
+			return
+		case "git-smudge":
+			PlumbingSmudge("default")
+			return
+		case "git-textconv":
+			PlumbingTextconv("default", args[1])
+			return
+		}
+	}
+
+	// construct the main cli args parser and help text generator
 	app := cli.NewApp()
 	app.Name = "grypt"
 	app.Usage = "grypt is a tool that allows you to store secrets in a git repository."
 	app.Version = "v0.1"
-
 	app.Commands = []cli.Command{
 		{
 			Name:  "generate-key",
@@ -131,5 +148,6 @@ func Run(args ...string) {
 		},
 	}
 
+	// parse and run.  dispatches control to command implementations via the Action function pointers in the structs above.
 	app.Run(args)
 }
