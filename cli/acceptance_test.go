@@ -49,7 +49,7 @@ func TestGenerateKey(t *testing.T) {
 
 func TestKeepSecret(t *testing.T) {
 	gdir := testutil.BuildGrypt()
-	gpath := strings.Join([]string{gdir, os.Getenv("PATH")}, ":")
+	gpath := strings.Join([]string{gdir, os.Getenv("PATH")}, string(os.PathListSeparator))
 	git := git(gosh.Env{"PATH": gpath})
 
 	gosh.Sh("sh")(gosh.Env{"PATH": gpath})("-c", "echo $PATH; grypt --hallo")(gosh.DefaultIO)()
