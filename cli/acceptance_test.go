@@ -7,6 +7,8 @@ import (
 	"polydawn.net/grypt/cli"
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/testutil"
+	"polydawn.net/pogo/gosh"
+	"strings"
 	"testing"
 )
 
@@ -46,6 +48,12 @@ func TestGenerateKey(t *testing.T) {
 }
 
 func TestKeepSecret(t *testing.T) {
+	gdir := testutil.BuildGrypt()
+	gpath := strings.Join([]string{gdir, os.Getenv("PATH")}, ":")
+	git := git(gosh.Env{"PATH": gpath})
+
+	gosh.Sh("sh")(gosh.Env{"PATH": gpath})("-c", "echo $PATH; grypt --hallo")(gosh.DefaultIO)()
+
 	Convey("Given a new repo with grypt already past generate-key", t,
 		testutil.WithTmpdir(func() {
 			git("init")()

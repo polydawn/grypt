@@ -10,6 +10,9 @@ import (
 var git = gosh.Sh("git")
 
 func KeepSecret(ctx grypt.Context, keyring string, files []string) {
+	// put git config.  probably already exists, but this should be an effectively idempotent set in that case.
+	gitutil.PutGitFilterConfig(ctx)
+
 	// check up front that all the secret files exist
 	// this is racey with other checks later, but those later checks are done by git and come back to use as undifferentiated exit codes, so there's only so much we can do here.
 	// exit if any of the secret files don't exist
