@@ -6,9 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+
 	grypt "polydawn.net/grypt"
 	"polydawn.net/pogo/gosh"
-	"regexp"
 )
 
 var git = gosh.Sh("git")
@@ -43,7 +44,7 @@ type GitattribLine struct {
 	Raw     []byte // the whole line in its original form (so we can save it again)
 }
 
-var rPattern, _ = regexp.Compile("^[^\\s]*")
+var rPattern = regexp.MustCompile("^[^\\s]*")
 
 func ReadRepoGitAttribs(ctx grypt.Context) *Gitattribs {
 	return ReadGitAttribsFile(filepath.Join(ctx.RepoWorkDir, ".gitattributes"))
