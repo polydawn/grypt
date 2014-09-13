@@ -7,8 +7,6 @@ import (
 	"polydawn.net/grypt/cli"
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/testutil"
-	"polydawn.net/pogo/gosh"
-	"strings"
 	"testing"
 )
 
@@ -85,32 +83,10 @@ func TestKeepSecret(t *testing.T) {
 				Convey("The diff should show the cleartext", func() {
 					// TODO: this might actually be insane, because it relies on exec roundtripping through another grypt process.
 
-					println()
-					println("------")
-					git("diff", "--staged", "--no-color", "shadowfile")(gosh.DefaultIO)()
-					println("------")
-					git("format-patch", "--stdout")(gosh.DefaultIO)()
-					println("------")
-					diffIndexLines := strings.Split(git("diff-index", "--cached", "HEAD").Output(), "\n")
-					stagedBlobs := make(map[string]string)
-					for _, line := range diffIndexLines {
-						splat := strings.Split(line, " ")
-						if len(splat) != 5 {
-							continue
-						}
-						println(line)
-						println(splat)
-						println(splat[4])
-						filename := strings.Split(splat[4], "\t")[1]
-						println(filename)
-						stagedBlobs[filename] = git("show", splat[3]).Output()
-						println(stagedBlobs[filename])
-					}
-					println(diffIndexLines)
-					println("------")
-
 					// staged diff should have our bby
-					So(git("diff", "--staged", "--raw", "shadowfile").Output(), ShouldEqual, "cleartext")
+					// TODO: this test might actually be jumping the gun a little... i don't think the inspection we're using here is going to give the diff filter a chance to run
+					// ...so it should actually probably see the ciphertext.  but we're not done connecting those parts yet, so we'll have to review this again later.
+					So(string(gitutil.ListStagedFileContents()["shadowfile"]), ShouldEqual, "cleartext")
 					// no unstaged changes should be around
 					So(git("diff", "--raw").Output(), ShouldEqual, "")
 				})
