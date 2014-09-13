@@ -37,7 +37,6 @@ func BuildGrypt() string {
 			panic(fmt.Errorf("reached root without finding project base dir when starting from %s", cwd))
 		}
 	}
-	println(projectBase)
 
 	// make a tmpdir where we can output the binary
 	tmpBase := os.Getenv("TMPDIR")
@@ -54,6 +53,8 @@ func BuildGrypt() string {
 		panic(err)
 	}
 
+	// exec `go build` with a GOPATH based on the project dir and have it put a grypt exectuable in our tempdir.
+	// we can leave stdin/stdout/stderr connected to the compiler exec because it's silent, unless something goes wrong in which case we do quite want to see it.
 	g := gosh.Sh("go")(gosh.Env{"GOPATH": filepath.Join(projectBase, ".gopath")})
 	g("build", "-o", filepath.Join(tmpdir, "grypt"), "polydawn.net/grypt/main")(gosh.DefaultIO)()
 
