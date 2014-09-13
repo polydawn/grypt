@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -18,11 +19,25 @@ func BuildGrypt() string {
 	// TODO: i don't really know how I intend to implement cleanup of this thing.
 	// maybe we'll end up with another function chainer like WithTmpdir() that lets us just bind it to goconvey context.  but there's also no earthly reason we'll want to tolerate running the compiler again for every test.
 
-	// get the cwd, which we assume to still be the root of the project, or else you can fuck right off
+	// find the project root dir.  go tests run with a cwd that is the directory of the package.  so we should be able to look up until we find an indicator that we're in the project root.
+	// the indicator chosen is the goad script, because fuck it, it makes as little sense as anything else.  if there's an alternative where i can ask the go testing package where i *wish* my cwd was, that'd be great.
 	cwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
+	projectBase := cwd
+	for {
+		projectBase = filepath.Dir(projectBase)
+		_, err := os.Stat(filepath.Join(projectBase, "goad"))
+		exists := err == nil || !os.IsNotExist(err)
+		if exists {
+			break // gotcha
+		}
+		if projectBase == string(filepath.Separator) {
+			panic(fmt.Errorf("reached root without finding project base dir when starting from %s", cwd))
+		}
+	}
+	println(projectBase)
 
 	// make a tmpdir where we can output the binary
 	tmpBase := os.Getenv("TMPDIR")
@@ -39,8 +54,8 @@ func BuildGrypt() string {
 		panic(err)
 	}
 
-	g := gosh.Sh("go")(gosh.Env{"GOPATH": filepath.Join(cwd, ".gopath")})
-	g("build", "-o", filepath.Join(tmpdir, "grypt"))(gosh.DefaultIO)()
+	g := gosh.Sh("go")(gosh.Env{"GOPATH": filepath.Join(projectBase, ".gopath")})
+	g("build", "-o", filepath.Join(tmpdir, "grypt"), "polydawn.net/grypt/main")(gosh.DefaultIO)()
 
 	return tmpdir
 }
