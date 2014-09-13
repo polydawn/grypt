@@ -87,6 +87,7 @@ func TestKeepSecret(t *testing.T) {
 					// TODO: this test might actually be jumping the gun a little... i don't think the inspection we're using here is going to give the diff filter a chance to run
 					// ...so it should actually probably see the ciphertext.  but we're not done connecting those parts yet, so we'll have to review this again later.
 					So(string(gitutil.ListStagedFileContents()["shadowfile"]), ShouldEqual, "cleartext")
+					SkipSo(1, ShouldEqual, 2) // dummy line to highlight in the report we're not done here
 					// no unstaged changes should be around
 					So(git("diff", "--raw").Output(), ShouldEqual, "")
 				})
@@ -96,9 +97,7 @@ func TestKeepSecret(t *testing.T) {
 
 					// '--no-ext-diff' or '--no-textconv' might be alternative ways to test this
 
-					Convey("The diff should show the ciphertext", func() {
-						//TODO
-					})
+					Convey("The diff should show the ciphertext", nil)
 				})
 			})
 		}),
