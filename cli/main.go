@@ -16,13 +16,13 @@ func Run(myName string, args ...string) {
 		// FIXME: don't know how to do keyring setup yet.  probably something with extra tuples tossed into gitattributes at the time of keep-secret.
 		switch args[1] {
 		case "git-clean":
-			PlumbingClean(grypt.DetectContext(), "default")
+			PlumbingClean(grypt.DetectContext(), "default", os.Stdin, os.Stdout)
 			return
 		case "git-smudge":
-			PlumbingSmudge(grypt.DetectContext(), "default")
+			PlumbingSmudge(grypt.DetectContext(), "default", os.Stdin, os.Stdout)
 			return
 		case "git-textconv":
-			PlumbingTextconv(grypt.DetectContext(), "default", args[2])
+			PlumbingTextconv(grypt.DetectContext(), "default", args[2], os.Stdout)
 			return
 		}
 	}
