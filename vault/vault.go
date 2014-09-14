@@ -51,6 +51,12 @@ const (
 	Header_grypt_keyring = "Grypt-Keyring"
 )
 
+var Nonoptional_headers = []string{
+	Header_grypt_version,
+	Header_grypt_scheme,
+	Header_grypt_keyring,
+}
+
 type Content struct {
 	Headers    Headers
 	ciphertext []byte // buffer might turn out more appropriate
@@ -62,10 +68,19 @@ func (c Content) MarshalBinary() (data []byte, err error) {
 	var buf bytes.Buffer
 	// start header
 	fmt.Fprintf(&buf, "----- BEGIN GRYPT CIPHERTEXT HEADER -----\n")
-	// place certain non-optional headers at the front of the parade.  report errors if they are not assigned.
-	// TODO
+	// place certain non-optional headers at the front of the parade.
+	for _, key := range Nonoptional_headers {
+		// TODO: report errors if they are not assigned.
+		fmt.Fprintf(&buf, "%s: %s\n", key, c.Headers[key])
+	}
 	// iterate over remaining headers.  skip the ones already included above.
+L1:
 	for key, value := range c.Headers {
+		for _, already := range Nonoptional_headers {
+			if key == already {
+				continue L1
+			}
+		}
 		fmt.Fprintf(&buf, "%s: %s\n", key, value)
 	}
 	// end header
@@ -115,6 +130,8 @@ func Encrypt(i io.Reader, o io.Writer, k grypt.Key) error {
 	// header, err := asn1.Marshal(Header{k.Scheme, iv, hmacMsg.Sum(nil)})
 	headers := Headers{
 		Header_grypt_scheme: fmt.Sprintf("%s", k.Scheme), // TODO this does roughly "what I mean", but should probably be replaced by a marshaller spec on a solid scheme type
+		// "a":                 "b",
+		// "c":                 "d",
 	}
 	serial, err := Content{headers, iv, hmacMsg.Sum(nil), ciphertext.Bytes()}.MarshalBinary()
 	_, err = o.Write(serial)
