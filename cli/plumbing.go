@@ -3,13 +3,15 @@ package cli
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	grypt "polydawn.net/grypt"
 )
 
 // TODO: all these currently consume hardcoded Stdin and Stdout.  this should probably be parameterized
 
-func PlumbingClean(keyring string) {
-	k, err := grypt.ReadKey(keyring)
+func PlumbingClean(ctx grypt.Context, keyring string) {
+	keyDir := filepath.Join(ctx.RepoDataDir, "grypt")
+	k, err := grypt.ReadKey(filepath.Join(keyDir, keyring+".key"))
 	if err != nil {
 		panic(fmt.Errorf("error reading key: %v", err)) // you see how this is the same in every function (except for the one that was previous divergent through sheer human oversight)?  this is why that "handle errors where they occur" mantra is complete horseshit.  it leads to stupid duplication of error handling absolutely fucking everywhere, and that multiplied by time and contact with the real world leads to inconsistent error handling.  painful.
 	}
@@ -18,8 +20,9 @@ func PlumbingClean(keyring string) {
 	}
 }
 
-func PlumbingSmudge(keyring string) {
-	k, err := grypt.ReadKey(keyring)
+func PlumbingSmudge(ctx grypt.Context, keyring string) {
+	keyDir := filepath.Join(ctx.RepoDataDir, "grypt")
+	k, err := grypt.ReadKey(filepath.Join(keyDir, keyring+".key"))
 	if err != nil {
 		panic(fmt.Errorf("error reading key: %v", err))
 	}
@@ -28,8 +31,9 @@ func PlumbingSmudge(keyring string) {
 	}
 }
 
-func PlumbingTextconv(keyring string, f string) {
-	k, err := grypt.ReadKey(keyring)
+func PlumbingTextconv(ctx grypt.Context, keyring string, f string) {
+	keyDir := filepath.Join(ctx.RepoDataDir, "grypt")
+	k, err := grypt.ReadKey(filepath.Join(keyDir, keyring+".key"))
 	if err != nil {
 		panic(fmt.Errorf("error reading key: %v", err))
 	}
