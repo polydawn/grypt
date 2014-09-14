@@ -8,7 +8,7 @@ import (
 	grypt "polydawn.net/grypt"
 )
 
-func Run(args ...string) {
+func Run(myName string, args ...string) {
 	// first sack-n-grab on any subcommands that are the plumbing for git.
 	// we don't run these through the main cli system because they're not complex enough to need it and we don't actually really want help text for these.
 	if len(args) > 0 {
@@ -114,6 +114,7 @@ func Run(args ...string) {
 				ctx := grypt.DetectContext()
 
 				KeepSecret(
+					myName,
 					ctx,
 					c.String("keyring"),
 					files,
