@@ -56,6 +56,11 @@ func TestKeepSecret(t *testing.T) {
 
 	Convey("Given a new repo with grypt already past generate-key", t,
 		testutil.WithTmpdir(func() {
+			os.Setenv("PATH", gpath)
+
+			println("------")
+			gosh.Sh("sh")("-c", "echo $PATH")(gosh.DefaultIO)()
+
 			git("init")()
 			git("commit")("--allow-empty", "-m", "initial commit")()
 			cli.Run(
