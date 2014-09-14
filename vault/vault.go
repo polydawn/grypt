@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/cipher"
 	"crypto/hmac"
@@ -64,10 +65,15 @@ type Content struct {
 	MAC        []byte // probably these should just go as a part of the b64'd ciphertext?
 }
 
+const (
+	grypt_vault_start = "----- BEGIN GRYPT CIPHERTEXT HEADER -----\n"
+	grypt_vault_end   = "----- END GRYPT CIPHERTEXT HEADER -----\n"
+)
+
 func (c Content) MarshalBinary() (data []byte, err error) {
 	var buf bytes.Buffer
 	// start header
-	fmt.Fprintf(&buf, "----- BEGIN GRYPT CIPHERTEXT HEADER -----\n")
+	fmt.Fprintf(&buf, grypt_vault_start)
 	// place certain non-optional headers at the front of the parade.
 	for _, key := range Nonoptional_headers {
 		// TODO: report errors if they are not assigned.
@@ -84,7 +90,7 @@ L1:
 		fmt.Fprintf(&buf, "%s: %s\n", key, value)
 	}
 	// end header
-	fmt.Fprintf(&buf, "----- END GRYPT CIPHERTEXT HEADER -----\n")
+	fmt.Fprintf(&buf, grypt_vault_end)
 	// drop ciphertext.  length is embedded in the binary form.
 	buf.Write(c.ciphertext)
 	// trailing whitespace to moderately decrease the odds of your terminal crying if you cat this file.
@@ -94,6 +100,23 @@ L1:
 }
 
 func (c *Content) UnmarshalBinary(data []byte) error {
+	reader := bufio.NewReader(bytes.NewBuffer(data))
+	var line string
+	var err error
+	// first line absolutely must be our header
+	if line, err = reader.ReadString('\n'); err != nil {
+		return err
+	}
+	if line != grypt_vault_start {
+		return fmt.Errorf("invalid grypt vault header: doesn't look like grypt vault ciphertext")
+	}
+
+	// read one line at a time until we see the end of our header
+
+	// parse all those header entries
+
+	// we can now act like a reader for the payload decryption (which should know enough about its own format to not over-read; we may have more bytes trailing than just payload)
+
 	return nil
 }
 
@@ -130,14 +153,8 @@ func Encrypt(i io.Reader, o io.Writer, k grypt.Key) error {
 	// header, err := asn1.Marshal(Header{k.Scheme, iv, hmacMsg.Sum(nil)})
 	headers := Headers{
 		Header_grypt_scheme: fmt.Sprintf("%s", k.Scheme), // TODO this does roughly "what I mean", but should probably be replaced by a marshaller spec on a solid scheme type
-		// "a":                 "b",
-		// "c":                 "d",
 	}
 	serial, err := Content{headers, iv, hmacMsg.Sum(nil), ciphertext.Bytes()}.MarshalBinary()
 	_, err = o.Write(serial)
-	// if err != nil {
-	// 	return err
-	// }
-	// _, err = io.Copy(o, ciphertext)
 	return err
 }
