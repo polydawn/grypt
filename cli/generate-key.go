@@ -18,7 +18,7 @@ func GenerateKey(ctx grypt.Context, keyring string, random bool, password []byte
 		k, err = grypt.NewKey(rand.Reader, encryptionScheme)
 	} else {
 		hkdf := hkdf.New(sha256.New, password, nil, nil)
-		k, err = grypt.NewKey(hkdf, enrcyprtionScheme)
+		k, err = grypt.NewKey(hkdf, encryptionScheme)
 	}
 	if err != nil {
 		panic(fmt.Errorf("failure generating key: %v", err))
