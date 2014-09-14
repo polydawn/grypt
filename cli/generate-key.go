@@ -2,14 +2,24 @@ package cli
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"code.google.com/p/go.crypto/hkdf"
 	grypt "polydawn.net/grypt"
 )
 
 func GenerateKey(ctx grypt.Context, keyring string, random bool, password []byte, encryptionScheme grypt.Scheme) {
-	k, err := grypt.NewKey(rand.Reader, encryptionScheme)
+	var k grypt.Key
+	var err error
+	if random {
+		k, err = grypt.NewKey(rand.Reader, encryptionScheme)
+	} else {
+		hkdf := hkdf.New(sha256.New, password, nil, nil)
+		k, err = grypt.NewKey(hkdf, enrcyprtionScheme)
+	}
 	if err != nil {
 		panic(fmt.Errorf("failure generating key: %v", err))
 	}
