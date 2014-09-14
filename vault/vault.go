@@ -7,6 +7,7 @@ import (
 	"crypto/hmac"
 	"fmt"
 	"io"
+	"regexp"
 
 	grypt "polydawn.net/grypt"
 )
@@ -57,6 +58,8 @@ var Nonoptional_headers = []string{
 	Header_grypt_scheme,
 	Header_grypt_keyring,
 }
+
+var header_regexp = regexp.MustCompile("^([[:upper:]][[:alnum:]-]*):[[:space:]]*([[:alnum:][:punct:]]*)[[:space:]]*")
 
 type Content struct {
 	Headers    Headers
@@ -112,8 +115,27 @@ func (c *Content) UnmarshalBinary(data []byte) error {
 	}
 
 	// read one line at a time until we see the end of our header
+	var rows []string
+	for {
+		if line, err = reader.ReadString('\n'); err != nil {
+			return err
+		}
+		rows = append(rows, line)
+		if line == grypt_vault_end {
+			break
+		}
+	}
 
 	// parse all those header entries
+	c.Headers = Headers{}
+	for _, row := range rows {
+		matches := header_regexp.FindStringSubmatch(row)
+		if len(matches) != 3 {
+			continue // this isn't one of ours
+			// consider adding a format verification step as a CheckKey subcommand that could warn about bananas formats, in case someone starts writing their own headers for some unearthly reason
+		}
+		c.Headers[matches[1]] = matches[2]
+	}
 
 	// we can now act like a reader for the payload decryption (which should know enough about its own format to not over-read; we may have more bytes trailing than just payload)
 
