@@ -11,9 +11,9 @@ import (
 func Run(myName string, args ...string) {
 	// first sack-n-grab on any subcommands that are the plumbing for git.
 	// we don't run these through the main cli system because they're not complex enough to need it and we don't actually really want help text for these.
-	if len(args) > 0 {
+	if len(args) > 1 {
 		// FIXME: don't know how to do keyring setup yet.  probably something with extra tuples tossed into gitattributes at the time of keep-secret.
-		switch args[0] {
+		switch args[1] {
 		case "git-clean":
 			PlumbingClean("default")
 			return
@@ -21,7 +21,7 @@ func Run(myName string, args ...string) {
 			PlumbingSmudge("default")
 			return
 		case "git-textconv":
-			PlumbingTextconv("default", args[1])
+			PlumbingTextconv("default", args[2])
 			return
 		}
 	}
