@@ -27,6 +27,8 @@ func ListStagedFiles() map[string]string {
 
 /*
 	Much like `ListStagedFiles()`, but maps the filenames to the contents of the staged files instead of just the blob objectsIds.
+
+	This method does not pass through any smudge/clean/textconv filters -- it just produces the raw blob object, as it stands in git's dircache.
 */
 func ListStagedFileContents() map[string][]byte {
 	stagedContents := make(map[string][]byte)
