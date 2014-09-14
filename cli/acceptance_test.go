@@ -4,6 +4,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"polydawn.net/grypt/cli"
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/testutil"
@@ -26,6 +27,7 @@ func TestGenerateKey(t *testing.T) {
 
 			Convey("When 'grypt generate-key' is called", func() {
 				cli.Run(
+					"irrelephant",
 					"grypt",
 					"generate-key",
 					"--password", "asdf", // do not want interactive prompt to be hit in tests
@@ -46,11 +48,19 @@ func TestGenerateKey(t *testing.T) {
 }
 
 func TestKeepSecret(t *testing.T) {
+	gdir := testutil.BuildGrypt()
+	// gpath := strings.Join([]string{gdir, os.Getenv("PATH")}, string(os.PathListSeparator))
+	// turns out trying to set $PATH doesn't work because git makes itself a fresh shell before calling filter commands.
+	//git := git(gosh.Env{"PATH": gpath})
+	//os.Setenv("PATH", gpath)
+
 	Convey("Given a new repo with grypt already past generate-key", t,
 		testutil.WithTmpdir(func() {
+
 			git("init")()
 			git("commit")("--allow-empty", "-m", "initial commit")()
 			cli.Run(
+				"irrelephant",
 				"grypt",
 				"generate-key",
 				"--password", "asdf", // do not want interactive prompt to be hit in tests
@@ -60,6 +70,7 @@ func TestKeepSecret(t *testing.T) {
 				err := ioutil.WriteFile("shadowfile", []byte("cleartext"), 0644)
 				So(err, ShouldBeNil)
 				cli.Run(
+					filepath.Join(gdir, "grypt"),
 					"grypt",
 					"keep-secret",
 					"shadowfile",
