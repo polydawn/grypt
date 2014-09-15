@@ -10,19 +10,26 @@ import (
 )
 
 func Run(myName string, args ...string) {
+	// set up shared bits of context information.  any subcommand will use this.
+	ctx := grypt.DetectContext()
+	ctx.GryptName = myName
+	ctx.GryptVersion = "v0.1"
+
 	// first sack-n-grab on any subcommands that are the plumbing for git.
 	// we don't run these through the main cli system because they're not complex enough to need it and we don't actually really want help text for these.
 	if len(args) > 1 {
 		// FIXME: don't know how to do keyring setup yet.  probably something with extra tuples tossed into gitattributes at the time of keep-secret.
+		ctx.Keyring = "default"
+
 		switch args[1] {
 		case "git-clean":
-			PlumbingClean(grypt.DetectContext(), "default", os.Stdin, os.Stdout)
+			PlumbingClean(ctx, os.Stdin, os.Stdout)
 			return
 		case "git-smudge":
-			PlumbingSmudge(grypt.DetectContext(), "default", os.Stdin, os.Stdout)
+			PlumbingSmudge(ctx, os.Stdin, os.Stdout)
 			return
 		case "git-textconv":
-			PlumbingTextconv(grypt.DetectContext(), "default", args[2], os.Stdout)
+			PlumbingTextconv(ctx, args[2], os.Stdout)
 			return
 		}
 	}
@@ -83,11 +90,10 @@ func Run(myName string, args ...string) {
 					}
 				}
 
-				ctx := grypt.DetectContext()
+				ctx.Keyring = c.String("keyring")
 
 				GenerateKey(
 					ctx,
-					c.String("keyring"),
 					c.Bool("random-key"),
 					password,
 					encryptionScheme,
@@ -112,12 +118,10 @@ func Run(myName string, args ...string) {
 				}
 				files := c.Args()
 
-				ctx := grypt.DetectContext()
+				ctx.Keyring = c.String("keyring")
 
 				KeepSecret(
-					myName,
 					ctx,
-					c.String("keyring"),
 					files,
 				)
 			},
