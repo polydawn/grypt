@@ -8,8 +8,10 @@ import (
 func TestVaultHeadersRoundtrip(t *testing.T) {
 	Convey("Given some valid serialized headers", t, func() {
 		headers := Headers{
-			Header_grypt_scheme: "rot13",
-			"A":                 "b",
+			Header_grypt_version: "v1000",
+			Header_grypt_scheme:  "rot13",
+			Header_grypt_keyring: "default",
+			"A":                  "b",
 		}
 		serial, err := Content{
 			Headers: headers,
@@ -26,10 +28,12 @@ func TestVaultHeadersRoundtrip(t *testing.T) {
 
 	Convey("Given some mix of valid and invalid serialized headers", t, func() {
 		headers := Headers{
-			Header_grypt_scheme: " rot13 ",
-			"A":                 "b",
-			"c":                 "d",
-			"clearly not":       "d",
+			Header_grypt_version: "v1000",
+			Header_grypt_scheme:  " rot13 ",
+			Header_grypt_keyring: "default",
+			"A":                  "b",
+			"c":                  "d",
+			"clearly not":        "d",
 		}
 		serial, err := Content{
 			Headers: headers,
