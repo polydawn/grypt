@@ -185,7 +185,9 @@ func Encrypt(i io.Reader, o io.Writer, k grypt.Key) error {
 	// serialize our header and append the encrypted file
 	// header, err := asn1.Marshal(Header{k.Scheme, iv, hmacMsg.Sum(nil)})
 	headers := Headers{
-		Header_grypt_scheme: fmt.Sprintf("%s", k.Scheme), // TODO this does roughly "what I mean", but should probably be replaced by a marshaller spec on a solid scheme type
+		Header_grypt_version: "v1000",                     // FIXME: need moar context
+		Header_grypt_scheme:  fmt.Sprintf("%s", k.Scheme), // TODO this does roughly "what I mean", but should probably be replaced by a marshaller spec on a solid scheme type
+		Header_grypt_keyring: "default",                   // FIXME: ... seriously
 	}
 	serial, err := Content{headers, iv, hmacMsg.Sum(nil), ciphertext.Bytes()}.MarshalBinary()
 	if err != nil {
