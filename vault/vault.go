@@ -154,7 +154,7 @@ func (c *Content) UnmarshalBinary(data []byte) error {
 }
 
 // didn't actually intend to ripe this much out of the main package yet, but i'm having import cycle butthurtz, so here we go
-func Encrypt(i io.Reader, o io.Writer, k grypt.Key) error {
+func Encrypt(ctx grypt.Context, i io.Reader, o io.Writer, k grypt.Key) error {
 	plaintext := new(bytes.Buffer)
 	ciphertext := new(bytes.Buffer)
 	c, err := k.Scheme.NewCipher(k.Key)
@@ -185,9 +185,9 @@ func Encrypt(i io.Reader, o io.Writer, k grypt.Key) error {
 	// serialize our header and append the encrypted file
 	// header, err := asn1.Marshal(Header{k.Scheme, iv, hmacMsg.Sum(nil)})
 	headers := Headers{
-		Header_grypt_version: "v1000",                     // FIXME: need moar context
+		Header_grypt_version: ctx.GryptVersion,
 		Header_grypt_scheme:  fmt.Sprintf("%s", k.Scheme), // TODO this does roughly "what I mean", but should probably be replaced by a marshaller spec on a solid scheme type
-		Header_grypt_keyring: "default",                   // FIXME: ... seriously
+		Header_grypt_keyring: ctx.Keyring,
 	}
 	serial, err := Content{headers, iv, hmacMsg.Sum(nil), ciphertext.Bytes()}.MarshalBinary()
 	if err != nil {
