@@ -188,6 +188,9 @@ func Encrypt(i io.Reader, o io.Writer, k grypt.Key) error {
 		Header_grypt_scheme: fmt.Sprintf("%s", k.Scheme), // TODO this does roughly "what I mean", but should probably be replaced by a marshaller spec on a solid scheme type
 	}
 	serial, err := Content{headers, iv, hmacMsg.Sum(nil), ciphertext.Bytes()}.MarshalBinary()
+	if err != nil {
+		return err
+	}
 	_, err = o.Write(serial)
 	return err
 }
