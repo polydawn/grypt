@@ -7,8 +7,11 @@ import (
 var git = gosh.Sh("git")
 
 type Context struct {
-	RepoDataDir string
-	RepoWorkDir string
+	GryptName    string // name of the current executable (treat it sort of like "$0" in bash).  probably equal to "grypt" (may be an absolute path in tests to a temporary binary).
+	GryptVersion string // version identifier of the currently operating version of grypt.  maybe be useful to serialize into headers.
+	Keyring      string // name of the keyring this command is operating with.  any grypt command only operates with one keyring at a time.
+	RepoDataDir  string
+	RepoWorkDir  string
 }
 
 func DetectContext() Context {
