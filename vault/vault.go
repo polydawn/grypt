@@ -75,13 +75,19 @@ const (
 
 func (c Content) MarshalBinary() (data []byte, err error) {
 	var buf bytes.Buffer
+
 	// start header
 	fmt.Fprintf(&buf, grypt_vault_start)
+
 	// place certain non-optional headers at the front of the parade.
 	for _, key := range Nonoptional_headers {
-		// TODO: report errors if they are not assigned.
-		fmt.Fprintf(&buf, "%s: %s\n", key, c.Headers[key])
+		value, ok := c.Headers[key]
+		if !ok {
+			return nil, fmt.Errorf("vault requires header %s", key)
+		}
+		fmt.Fprintf(&buf, "%s: %s\n", key, value)
 	}
+
 	// iterate over remaining headers.  skip the ones already included above.
 L1:
 	for key, value := range c.Headers {
@@ -92,13 +98,17 @@ L1:
 		}
 		fmt.Fprintf(&buf, "%s: %s\n", key, value)
 	}
+
 	// end header
 	fmt.Fprintf(&buf, grypt_vault_end)
+
 	// drop ciphertext.  length is embedded in the binary form.
 	buf.Write(c.ciphertext)
+
 	// trailing whitespace to moderately decrease the odds of your terminal crying if you cat this file.
 	buf.WriteRune('\n')
 	buf.WriteRune('\n')
+
 	return buf.Bytes(), nil
 }
 
@@ -106,6 +116,7 @@ func (c *Content) UnmarshalBinary(data []byte) error {
 	reader := bufio.NewReader(bytes.NewBuffer(data))
 	var line string
 	var err error
+
 	// first line absolutely must be our header
 	if line, err = reader.ReadString('\n'); err != nil {
 		return err
