@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"io"
+	"fmt"
 	"io/ioutil"
 	"testing"
 	"testing/iotest"
@@ -12,7 +13,6 @@ import (
 
 var (
 	plaintextSize = 1024
-	out           [][]byte
 
 	plaintext = mkRand(plaintextSize)
 	schemas   = []Schema{
@@ -38,25 +38,38 @@ func TestEncrypt(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Logf("%25s: %.75s...\n", sch.Name(), hex.EncodeToString(buf.Bytes()))
-		out = append(out, buf.Bytes())
 	}
 	return
 }
 
-func TestDecrypt(t *testing.T) {
+func TestRoundTrip(t *testing.T) {
 	t.Logf("%25s: %.75s...\n", "plaintext", hex.EncodeToString(plaintext))
-	for i, sch := range schemas {
-		k := Key{mkRand(sch.KeySize()), mkRand(sch.MACSize())}
-		x := new(bytes.Buffer)
-		if err := sch.Decrypt(bytes.NewReader(out[i]), x, k); err != nil {
+	for _, sch := range schemas {
+		// make key
+		k, err := sch.NewKey(rand.Reader)
+		if err != nil {
 			t.Fatal(err)
 		}
-		t.Logf("%25s: %.75s...\n", sch.Name(), hex.EncodeToString(x.Bytes()))
-		if !bytes.Equal(plaintext, x.Bytes()) {
-			t.Fail()
+
+		// encrypt
+		ciphertext := new(bytes.Buffer)
+		if err := sch.Encrypt(bytes.NewReader(plaintext), ciphertext, k); err != nil {
+			t.Fatal(err)
+		}
+
+		// decrypt & verify
+		reheatedtext := new(bytes.Buffer)
+		err = sch.Decrypt(ciphertext, reheatedtext, k)
+		t.Logf("%25s: %.75s...\n", sch.Name(), hex.EncodeToString(reheatedtext.Bytes()))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// check cleartext match
+		if !bytes.Equal(plaintext, reheatedtext.Bytes()) {
+			t.Fatal(fmt.Errorf("cleartext match failure"))
 		}
 	}
-	return
 }
 
 func TestMACFailure(t *testing.T) {
