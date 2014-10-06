@@ -7,6 +7,9 @@ import (
 	"io"
 )
 
+/*
+	@implements Schema
+*/
 type Aes256sha256ctr struct {}
 
 func (s Aes256sha256ctr) KeySize() int {
@@ -42,5 +45,5 @@ func (s Aes256sha256ctr) NewKey(entropy io.Reader) (Key, error) {
 	Other headers like which schema this is, etc, are expected to be kept elsewhere as necessary.
 */
 func (s Aes256sha256ctr) Encrypt(input io.Reader, output io.Writer, k Key) error {
-	return encrypt(sha256.New, aes.NewCipher, cipher.NewCTR)(input, output, k)
+	return encrypt(s, sha256.New, aes.NewCipher, cipher.NewCTR)(input, output, k)
 }

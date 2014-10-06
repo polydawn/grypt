@@ -25,9 +25,13 @@ type encrypter func(input io.Reader, output io.Writer, k Key) error
 
 	Other headers like which schema this is, etc, are expected to be kept elsewhere as necessary.
 */
-func encrypt(macFactory func() hash.Hash, cipherFactory func(key []byte) (cipher.Block, error), streamFactory func (cipher.Block, []byte) cipher.Stream) encrypter {
+func encrypt(sch Schema, macFactory func() hash.Hash, cipherFactory func(key []byte) (cipher.Block, error), streamFactory func (cipher.Block, []byte) cipher.Stream) encrypter {
 	// implementation note: the golang stdlib distinction between cipher.Stream and cipher.BlockMode is... odd, and could be readily wallpapered over with some really derpy wrappers.  haven't bothered yet.
 
+	// also: feel slightly bad about passing in both the schema, and all its functors.  could make the Schema interface also return all these things.
+	// really wish the hash/block/stream classes just returned their own sizes consistently, because that would make this a nonissue.
+
+	// @implements encrypter
 	return func(input io.Reader, output io.Writer, k Key) error {
 		// Read in the file, calculating the IV and buffering it
 		// impl note: this won't do well with gig files... but this could easily be replaced with re-reading the input, if we had knew we had a resettable reader like a disk
@@ -38,7 +42,7 @@ func encrypt(macFactory func() hash.Hash, cipherFactory func(key []byte) (cipher
 		if _, err := io.Copy(mw, input); err != nil {
 			return err
 		}
-		iv := hmacIV.Sum(nil)[:s.BlockSize()]  // WAT for blocksize.  encryptor should closure over this, but is it... argument to encrypt()?  or should all should all encrypt() arguments be boiled down to a schema instance pointer, which can answer all the questions?  this would be less irritating if size() functions had been built into the stdlib crypto interfaces.
+		iv := hmacIV.Sum(nil)[:sch.MACSize()]
 
 		// commit the iv to output
 		if _, err := output.Write(iv); err != nil {
