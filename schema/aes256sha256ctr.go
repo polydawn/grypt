@@ -12,6 +12,10 @@ import (
 */
 type Aes256sha256ctr struct{}
 
+func (s Aes256sha256ctr) Name() string {
+	return "aes256sha256ctr"
+}
+
 func (s Aes256sha256ctr) KeySize() int {
 	return 32
 }
