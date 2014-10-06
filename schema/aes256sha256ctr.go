@@ -29,18 +29,7 @@ func (s Aes256sha256ctr) BlockSize() int {
 }
 
 func (s Aes256sha256ctr) NewKey(entropy io.Reader) (Key, error) {
-	var err error
-	symKey := make([]byte, s.KeySize())
-	macKey := make([]byte, s.MACSize())
-	_, err = io.ReadFull(entropy, macKey)
-	if err != nil {
-		return Key{}, err
-	}
-	_, err = io.ReadFull(entropy, symKey)
-	if err != nil {
-		return Key{}, err
-	}
-	return Key{symKey, macKey}, nil
+	return newKey(s, entropy)
 }
 
 /*

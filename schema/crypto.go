@@ -13,6 +13,21 @@ type encrypter func(input io.Reader, output io.Writer, k Key) error
 
 type decrypter func(input io.Reader, output io.Writer, k Key) error
 
+func newKey(sch Schema, entropy io.Reader) (Key, error) {
+	var err error
+	symKey := make([]byte, sch.KeySize())
+	macKey := make([]byte, sch.MACSize())
+	_, err = io.ReadFull(entropy, macKey)
+	if err != nil {
+		return Key{}, err
+	}
+	_, err = io.ReadFull(entropy, symKey)
+	if err != nil {
+		return Key{}, err
+	}
+	return Key{symKey, macKey}, nil
+}
+
 /*
 	Generic symmetric encryption for:
 	  - a deterministic content-based IV
