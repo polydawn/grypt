@@ -5,8 +5,6 @@ import (
 	"crypto/cipher"
 	"crypto/hmac"
 	"io"
-
-	grypt "polydawn.net/grypt"
 )
 
 type Aes256sha256ctr struct {}
@@ -19,19 +17,19 @@ func (s Aes256sha256ctr) MACSize() int {
 	return 32
 }
 
-func (s Aes256sha256ctr) NewKey(entropy io.Reader) (grypt.Key, error) {
+func (s Aes256sha256ctr) NewKey(entropy io.Reader) (Key, error) {
 	var err error
 	symKey := make([]byte, s.KeySize())
 	macKey := make([]byte, s.MACSize())
 	_, err = io.ReadFull(entropy, macKey)
 	if err != nil {
-		return grypt.Key{}, err
+		return Key{}, err
 	}
 	_, err = io.ReadFull(entropy, symKey)
 	if err != nil {
-		return grypt.Key{}, err
+		return Key{}, err
 	}
-	return grypt.Key{grypt.Scheme(-1), symKey, macKey}, nil //FIXME: that -1 in the struct is pants, we just don't need that in the key struct anymore this way
+	return Key{symKey, macKey}, nil
 }
 
 /*
@@ -43,17 +41,17 @@ func (s Aes256sha256ctr) NewKey(entropy io.Reader) (grypt.Key, error) {
 
 	Other headers like which schema this is, etc, are expected to be kept elsewhere as necessary.
 */
-func (s Aes256sha256ctr) Encrypt(input io.Reader, output io.Writer, k grypt.Key) error {
+func (s Aes256sha256ctr) Encrypt(input io.Reader, output io.Writer, k Key) error {
 	// Read in the file, calculating the IV and buffering it
 	// impl note: this won't do well with gig files... but this could easily be replaced with re-reading the input, if we had knew we had a resettable reader like a disk
 	plaintext := new(bytes.Buffer)
-	hmacIV := hmac.New(k.Scheme.Hash(), k.HMAC)
+	hmacIV := hmac.New(k.Scheme.Hash(), k.hmacKey) // FIXME: parameterize again
 	mw := io.MultiWriter(plaintext, hmacIV)
 
 	if _, err := io.Copy(mw, input); err != nil {
 		return err
 	}
-	iv := hmacIV.Sum(nil)[:k.Scheme.BlockSize()]
+	iv := hmacIV.Sum(nil)[:s.BlockSize()]
 
 	// commit the iv to output
 	if _, err := output.Write(iv); err != nil {
@@ -61,7 +59,7 @@ func (s Aes256sha256ctr) Encrypt(input io.Reader, output io.Writer, k grypt.Key)
 	}
 
 	// initialize cipher, hmac, and write the expected ciphertext size
-	hmacMsg := hmac.New(k.Scheme.Hash(), k.HMAC)
+	hmacMsg := hmac.New(k.Scheme.Hash(), k.HMAC) // FIXME: parameterize again
 	blockCipher, err := k.Scheme.NewCipher(k.Key)
 	if err != nil {
 		return err
