@@ -24,6 +24,10 @@ func (s Aes256sha256ctr) MACSize() int {
 	return 32
 }
 
+func (s Aes256sha256ctr) BlockSize() int {
+	return aes.BlockSize
+}
+
 func (s Aes256sha256ctr) NewKey(entropy io.Reader) (Key, error) {
 	var err error
 	symKey := make([]byte, s.KeySize())

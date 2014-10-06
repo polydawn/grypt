@@ -45,7 +45,7 @@ func buildEncrypter(sch Schema, macFactory func() hash.Hash, cipherFactory func(
 		if _, err := io.Copy(mw, input); err != nil {
 			return err
 		}
-		iv := hmacIV.Sum(nil)[:sch.MACSize()]
+		iv := hmacIV.Sum(nil)[:sch.BlockSize()]
 
 		// commit the iv to output
 		if _, err := output.Write(iv); err != nil {
@@ -90,7 +90,7 @@ func buildDecrypter(sch Schema, macFactory func() hash.Hash, cipherFactory func(
 	// @implements decrypter
 	return func(input io.Reader, output io.Writer, k Key) error {
 		// read IV, use it to initialize cipher
-		iv := make([]byte, sch.KeySize())
+		iv := make([]byte, sch.BlockSize())
 		if _, err := io.ReadFull(input, iv); err != nil {
 			return err
 		}

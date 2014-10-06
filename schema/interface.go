@@ -7,6 +7,7 @@ type Schema interface {
 
 	KeySize() int
 	MACSize() int
+	BlockSize() int
 
 	NewKey(entropy io.Reader) (Key, error)
 
