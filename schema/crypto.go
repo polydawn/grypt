@@ -76,7 +76,7 @@ func buildEncrypter(sch Schema, macFactory func() hash.Hash, cipherFactory func(
 
 		// commit the expected ciphertext size to output
 		blocks := plaintext.Len() / sch.BlockSize()
-		if plaintext.Len() % sch.BlockSize() != 0 {
+		if plaintext.Len()%sch.BlockSize() != 0 {
 			blocks++
 		}
 		binary.Write(output, binary.BigEndian, int64(blocks*sch.BlockSize()))
