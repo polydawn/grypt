@@ -25,7 +25,7 @@ type encrypter func(input io.Reader, output io.Writer, k Key) error
 
 	Other headers like which schema this is, etc, are expected to be kept elsewhere as necessary.
 */
-func encrypt(sch Schema, macFactory func() hash.Hash, cipherFactory func(key []byte) (cipher.Block, error), streamFactory func (cipher.Block, []byte) cipher.Stream) encrypter {
+func buildEncryptor(sch Schema, macFactory func() hash.Hash, cipherFactory func(key []byte) (cipher.Block, error), streamFactory func (cipher.Block, []byte) cipher.Stream) encrypter {
 	// implementation note: the golang stdlib distinction between cipher.Stream and cipher.BlockMode is... odd, and could be readily wallpapered over with some really derpy wrappers.  haven't bothered yet.
 
 	// also: feel slightly bad about passing in both the schema, and all its functors.  could make the Schema interface also return all these things.

@@ -45,5 +45,5 @@ func (s Aes256sha256ctr) NewKey(entropy io.Reader) (Key, error) {
 	Other headers like which schema this is, etc, are expected to be kept elsewhere as necessary.
 */
 func (s Aes256sha256ctr) Encrypt(input io.Reader, output io.Writer, k Key) error {
-	return encrypt(s, sha256.New, aes.NewCipher, cipher.NewCTR)(input, output, k)
+	return buildEncryptor(s, sha256.New, aes.NewCipher, cipher.NewCTR)(input, output, k)
 }
