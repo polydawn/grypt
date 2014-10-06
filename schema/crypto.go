@@ -60,7 +60,11 @@ func buildEncrypter(sch Schema, macFactory func() hash.Hash, cipherFactory func(
 		}
 
 		// commit the expected ciphertext size to output
-		binary.Write(output, binary.BigEndian, int64(plaintext.Len()%sch.KeySize()+1*sch.KeySize()))
+		blocks := plaintext.Len() / sch.BlockSize()
+		if plaintext.Len() % sch.BlockSize() != 0 {
+			blocks++
+		}
+		binary.Write(output, binary.BigEndian, int64(blocks*sch.BlockSize()))
 
 		// push the input body through the cipher, and the ciphertext both out and through the hmac
 		mw = io.MultiWriter(output, hmacMsg)
