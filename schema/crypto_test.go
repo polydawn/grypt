@@ -17,6 +17,10 @@ var (
 	plaintext = mkRand(plaintextSize)
 	schemas   = []Schema{
 		Aes256sha256ctr{},
+		Aes256keccak256ctr{},
+		Blowfish448sha256ctr{},
+		Aes256blake2256ctr{},
+		Blowfish448blake2512ctr{},
 	}
 )
 
