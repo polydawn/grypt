@@ -1,6 +1,9 @@
 package schema
 
-import "io"
+import (
+	"io"
+	"fmt"
+)
 
 type Schema interface {
 	Name() string
@@ -25,4 +28,26 @@ type Schema interface {
 type Key struct {
 	cipherKey []byte
 	hmacKey   []byte
+}
+
+var schemas map[string]Schema = make(map[string]Schema)
+
+func init() {
+	for _, s := range []Schema{
+		Aes256sha256ctr{},
+		Aes256keccak256ctr{},
+		Blowfish448sha256ctr{},
+		Aes256blake2256ctr{},
+		Blowfish448blake2512ctr{},
+	} {
+		schemas[s.Name()] = s
+	}
+}
+
+func ParseSchema(s string) Schema {
+	if s, ok := schemas[s]; ok {
+		return s
+	} else {
+		panic(fmt.Errorf("invalid encryption schema name"))
+	}
 }
