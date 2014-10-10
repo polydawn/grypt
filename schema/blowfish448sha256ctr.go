@@ -26,7 +26,7 @@ func (s Blowfish448sha256ctr) Encrypt(input io.Reader, output io.Writer, k Key) 
 	return buildEncrypter(
 		s,
 		sha256.New,
-		blowfish.NewCipher,
+		func(key []byte) (cipher.Block, error) { return blowfish.NewCipher(key) },
 		cipher.NewCTR,
 	)(input, output, k)
 }
@@ -36,7 +36,7 @@ func (s Blowfish448sha256ctr) Decrypt(input io.Reader, output io.Writer, k Key) 
 	return buildDecrypter(
 		s,
 		sha256.New,
-		blowfish.NewCipher,
+		func(key []byte) (cipher.Block, error) { return blowfish.NewCipher(key) },
 		cipher.NewCTR,
 	)(input, output, k)
 }

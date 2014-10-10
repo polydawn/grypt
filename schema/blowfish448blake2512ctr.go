@@ -26,7 +26,7 @@ func (s Blowfish448blake2512ctr) Encrypt(input io.Reader, output io.Writer, k Ke
 	return buildEncrypter(
 		s,
 		blake2b.New512,
-		blowfish.NewCipher,
+		func(key []byte) (cipher.Block, error) { return blowfish.NewCipher(key) },
 		cipher.NewCTR,
 	)(input, output, k)
 }
@@ -36,7 +36,7 @@ func (s Blowfish448blake2512ctr) Decrypt(input io.Reader, output io.Writer, k Ke
 	return buildDecrypter(
 		s,
 		blake2b.New512,
-		blowfish.NewCipher,
+		func(key []byte) (cipher.Block, error) { return blowfish.NewCipher(key) },
 		cipher.NewCTR,
 	)(input, output, k)
 }
