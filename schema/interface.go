@@ -33,15 +33,22 @@ type Key struct {
 var schemas map[string]Schema = make(map[string]Schema)
 
 func init() {
+	// every schema can be looked up by its own name (obviously), and these are the ones that end up serialized in headers
 	for _, s := range []Schema{
 		Aes256sha256ctr{},
 		Aes256keccak256ctr{},
-		Blowfish448sha256ctr{},
 		Aes256blake2256ctr{},
+		Blowfish448sha256ctr{},
 		Blowfish448blake2512ctr{},
 	} {
 		schemas[s.Name()] = s
 	}
+	// additional names map onto the some things.
+	schemas["default"] = schemas[Aes256sha256ctr{}.Name()]
+	schemas["keccak"] = schemas[Aes256keccak256ctr{}.Name()]
+	schemas["blake2"] = schemas[Aes256blake2256ctr{}.Name()]
+	schemas["blowfish"] = schemas[Blowfish448sha256ctr{}.Name()]
+	schemas["blakefish"] = schemas[Blowfish448blake2512ctr{}.Name()]
 }
 
 func ParseSchema(s string) Schema {
