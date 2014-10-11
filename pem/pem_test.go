@@ -2,7 +2,6 @@ package pem
 
 import (
 	"encoding/pem"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -91,12 +90,7 @@ func TestPemFormatBasics(t *testing.T) {
 		})
 
 		Convey("Everything is the same when reheated", func() {
-			// but the conservative approach on serialization doesn't do much good if you can't round-trip it -.-
 			reheated, rest := pem.Decode(serial)
-			So(reheated.Type, ShouldResemble, block.Type)
-			So(reheated.Headers, ShouldResemble, block.Headers)
-			fmt.Printf("\n::::\t%#v\n\t%#v\n", reheated.Bytes, block.Bytes)
-			So(reheated.Bytes, ShouldResemble, block.Bytes)
 			So(reheated, ShouldResemble, block)
 			So(len(rest), ShouldEqual, 0)
 		})
@@ -109,6 +103,7 @@ func TestPemFormatBasics(t *testing.T) {
 				"  leading":  "x",
 				"trailing  ": "y",
 			},
+			Bytes: []byte{},
 		}
 		serial := pem.EncodeToMemory(block)
 
@@ -132,6 +127,7 @@ func TestPemFormatBasics(t *testing.T) {
 					"leading":  "x",
 					"trailing": "y",
 				},
+				Bytes: []byte{},
 			})
 			So(len(rest), ShouldEqual, 0)
 		})
