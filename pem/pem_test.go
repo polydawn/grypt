@@ -75,6 +75,7 @@ func TestPemFormatBasics(t *testing.T) {
 				"Grypt-Test-Header": "some value",
 				"Grypt-caps-sense": "moar value",
 			},
+			Bytes: []byte{} ,
 		}
 		serial := pem.EncodeToMemory(block)
 
