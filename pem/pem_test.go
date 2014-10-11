@@ -1,10 +1,10 @@
 package pem
 
 import (
-	"fmt"
 	"encoding/pem"
-	"testing"
+	"fmt"
 	"strings"
+	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -18,12 +18,13 @@ import (
 func lit(s string) string {
 	// the leading line is probably the break before the content, so skip that
 	s = strings.TrimPrefix(s, "\n")
-	
+
 	// figure out how many tabs are on the first line.  this is the indentation baseline we expect to strip for the rest.
 	depth := 0
-	for ; s[depth] == '\t' ; depth++ {}
+	for ; s[depth] == '\t'; depth++ {
+	}
 	baseline := strings.Repeat("\t", depth)
-	
+
 	// strip up to that number of indents from each line.
 	lines := strings.Split(s, "\n")
 	linecount := len(lines)
@@ -37,7 +38,7 @@ func lit(s string) string {
 	}
 
 	// the last line might have fewer, and we don't want those, but we still probably do want a trailing break
-	if strings.Count(output[linecount-1], "\t") == len(output[linecount-1])  {
+	if strings.Count(output[linecount-1], "\t") == len(output[linecount-1]) {
 		output[linecount-1] = ""
 	}
 
@@ -47,7 +48,7 @@ func lit(s string) string {
 func TestPemFormatBasics(t *testing.T) {
 	Convey("Given a nearly empty block", t, func() {
 		block := &pem.Block{
-			Type: "GRYPT CIPHERTEXT HEADER",
+			Type:    "GRYPT CIPHERTEXT HEADER",
 			Headers: map[string]string{},
 			// pem.Block.Bytes is a zero value for us, we're not gonna use b64
 		}
@@ -73,9 +74,9 @@ func TestPemFormatBasics(t *testing.T) {
 			Type: "GRYPT CIPHERTEXT HEADER",
 			Headers: map[string]string{
 				"Grypt-Test-Header": "some value",
-				"Grypt-caps-sense": "moar value",
+				"Grypt-caps-sense":  "moar value",
 			},
-			Bytes: []byte{} ,
+			Bytes: []byte{},
 		}
 		serial := pem.EncodeToMemory(block)
 
@@ -105,7 +106,7 @@ func TestPemFormatBasics(t *testing.T) {
 		block := &pem.Block{
 			Type: "GRYPT CIPHERTEXT HEADER",
 			Headers: map[string]string{
-				"  leading": "x",
+				"  leading":  "x",
 				"trailing  ": "y",
 			},
 		}
@@ -128,7 +129,7 @@ func TestPemFormatBasics(t *testing.T) {
 			So(reheated, ShouldResemble, &pem.Block{
 				Type: "GRYPT CIPHERTEXT HEADER",
 				Headers: map[string]string{
-					"leading": "x",
+					"leading":  "x",
 					"trailing": "y",
 				},
 			})
@@ -136,4 +137,3 @@ func TestPemFormatBasics(t *testing.T) {
 		})
 	})
 }
-
