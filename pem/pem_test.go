@@ -86,6 +86,13 @@ func TestPemFormatBasics(t *testing.T) {
 				-----END GRYPT CIPHERTEXT HEADER-----
 			`)) // i don't particularly understand why having nonzero headers got us this extra line break at the end, and consider that a bit wrong if there's no body bytes, but okay, whatever.
 		})
+
+		Convey("Everything is the same when reheated", func() {
+			// but the conservative approach on serialization doesn't do much good if you can't round-trip it -.-
+			reheated, rest := pem.Decode(serial)
+			So(reheated, ShouldResemble, block)
+			So(len(rest), ShouldEqual, 0)
+		})
 	})
 
 	Convey("Given headers named with leading or trailing spaces", t, func() {
