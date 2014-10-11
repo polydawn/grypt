@@ -1,8 +1,8 @@
 package schema
 
 import (
-	"io"
 	"fmt"
+	"io"
 )
 
 type Schema interface {
