@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 
 	"code.google.com/p/go.crypto/hkdf"
-	grypt "polydawn.net/grypt"
 )
 
 func GenerateKey(ctx grypt.Context, random bool, password []byte, encryptionScheme grypt.Scheme) {

@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"regexp"
 
-	grypt "polydawn.net/grypt"
 	"polydawn.net/pogo/gosh"
 )
 

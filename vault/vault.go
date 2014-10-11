@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-
-	grypt "polydawn.net/grypt"
 )
 
 /*

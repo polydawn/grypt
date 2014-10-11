@@ -2,7 +2,7 @@ package cli
 
 import (
 	"os"
-	grypt "polydawn.net/grypt"
+
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/pogo/gosh"
 )

@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	grypt "polydawn.net/grypt"
 	"polydawn.net/grypt/vault"
 )
 

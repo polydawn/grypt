@@ -6,7 +6,6 @@ import (
 
 	"code.google.com/p/go.crypto/ssh/terminal"
 	"github.com/codegangsta/cli"
-	grypt "polydawn.net/grypt"
 )
 
 func Run(myName string, args ...string) {
