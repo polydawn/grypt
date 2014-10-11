@@ -1,6 +1,7 @@
 package pem
 
 import (
+	"fmt"
 	"encoding/pem"
 	"testing"
 	"strings"
@@ -92,6 +93,7 @@ func TestPemFormatBasics(t *testing.T) {
 			reheated, rest := pem.Decode(serial)
 			So(reheated.Type, ShouldResemble, block.Type)
 			So(reheated.Headers, ShouldResemble, block.Headers)
+			fmt.Printf("\n::::\t%#v\n\t%#v\n", reheated.Bytes, block.Bytes)
 			So(reheated.Bytes, ShouldResemble, block.Bytes)
 			So(reheated, ShouldResemble, block)
 			So(len(rest), ShouldEqual, 0)
