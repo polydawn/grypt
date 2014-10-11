@@ -50,12 +50,19 @@ func TestPemFormatBasics(t *testing.T) {
 			Headers: map[string]string{},
 			// pem.Block.Bytes is a zero value for us, we're not gonna use b64
 		}
+		serial := pem.EncodeToMemory(block)
 
 		Convey("We should get an empty body section", func() {
-			So(string(pem.EncodeToMemory(block)), ShouldEqual, lit(`
+			So(string(serial), ShouldEqual, lit(`
 				-----BEGIN GRYPT CIPHERTEXT HEADER-----
 				-----END GRYPT CIPHERTEXT HEADER-----
 			`))
+		})
+
+		Convey("Everything is still empty when reheated", func() {
+			reheated, rest := pem.Decode(serial)
+			So(len(rest), ShouldEqual, 0)
+			So(reheated, ShouldResemble, block)
 		})
 	})
 
@@ -67,9 +74,10 @@ func TestPemFormatBasics(t *testing.T) {
 				"Grypt-caps-sense": "moar value",
 			},
 		}
+		serial := pem.EncodeToMemory(block)
 
 		Convey("The serial format is stable and looks nice", func() {
-			So(string(pem.EncodeToMemory(block)), ShouldEqual, lit(`
+			So(string(serial), ShouldEqual, lit(`
 				-----BEGIN GRYPT CIPHERTEXT HEADER-----
 				Grypt-Test-Header: some value
 				Grypt-caps-sense: moar value
