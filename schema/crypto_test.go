@@ -15,9 +15,6 @@ var (
 	plaintextSize = 1024
 
 	plaintext = mkRand(plaintextSize)
-	schemas   = []Schema{
-		Aes256sha256ctr{},
-	}
 )
 
 func mkRand(sz int) []byte {
