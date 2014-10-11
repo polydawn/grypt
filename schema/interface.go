@@ -31,6 +31,7 @@ type Key struct {
 }
 
 var schemas map[string]Schema = make(map[string]Schema)
+var extraNames map[string]Schema = make(map[string]Schema)
 
 func init() {
 	// every schema can be looked up by its own name (obviously), and these are the ones that end up serialized in headers
@@ -44,16 +45,18 @@ func init() {
 		schemas[s.Name()] = s
 	}
 	// additional names map onto the some things.
-	schemas["default"] = schemas[Aes256sha256ctr{}.Name()]
-	schemas["keccak"] = schemas[Aes256keccak256ctr{}.Name()]
-	schemas["blake2"] = schemas[Aes256blake2256ctr{}.Name()]
-	schemas["blowfish"] = schemas[Blowfish448sha256ctr{}.Name()]
-	schemas["blakefish"] = schemas[Blowfish448blake2512ctr{}.Name()]
+	extraNames["default"] = schemas[Aes256sha256ctr{}.Name()]
+	extraNames["keccak"] = schemas[Aes256keccak256ctr{}.Name()]
+	extraNames["blake2"] = schemas[Aes256blake2256ctr{}.Name()]
+	extraNames["blowfish"] = schemas[Blowfish448sha256ctr{}.Name()]
+	extraNames["blakefish"] = schemas[Blowfish448blake2512ctr{}.Name()]
 }
 
 func ParseSchema(s string) Schema {
-	if s, ok := schemas[s]; ok {
-		return s
+	if sch, ok := schemas[s]; ok {
+		return sch
+	} else if sch, ok := extraNames[s]; ok {
+		return sch
 	} else {
 		panic(fmt.Errorf("invalid encryption schema name"))
 	}
