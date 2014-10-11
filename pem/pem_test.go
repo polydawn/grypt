@@ -132,4 +132,41 @@ func TestPemFormatBasics(t *testing.T) {
 			So(len(rest), ShouldEqual, 0)
 		})
 	})
+
+	Convey("Given header values with leading or trailing spaces", t, func() {
+		block := &pem.Block{
+			Type: "GRYPT CIPHERTEXT HEADER",
+			Headers: map[string]string{
+				"leading":  "  x",
+				"trailing": "y  ",
+			},
+			Bytes: []byte{},
+		}
+		serial := pem.EncodeToMemory(block)
+
+		Convey("The strange values are preserved in serial form", func() {
+			// i guess this is the appropriate conservative behavior...
+			So(string(serial), ShouldEqual, lit(`
+				-----BEGIN GRYPT CIPHERTEXT HEADER-----
+				leading:   x
+				trailing: y  
+
+				-----END GRYPT CIPHERTEXT HEADER-----
+			`))
+		})
+
+		Convey("The strange values are altered (trimmed) when reheated", func() {
+			// but the conservative approach on serialization doesn't do much good if you can't round-trip it -.-
+			reheated, rest := pem.Decode(serial)
+			So(reheated, ShouldResemble, &pem.Block{
+				Type: "GRYPT CIPHERTEXT HEADER",
+				Headers: map[string]string{
+					"leading":  "x",
+					"trailing": "y",
+				},
+				Bytes: []byte{},
+			})
+			So(len(rest), ShouldEqual, 0)
+		})
+	})
 }
