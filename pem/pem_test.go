@@ -44,18 +44,73 @@ func lit(s string) string {
 }
 
 func TestPemFormatBasics(t *testing.T) {
-	Convey("Given some bananas", t, func() {
+	Convey("Given a nearly empty block", t, func() {
 		block := &pem.Block{
 			Type: "GRYPT CIPHERTEXT HEADER",
 			Headers: map[string]string{},
 			// pem.Block.Bytes is a zero value for us, we're not gonna use b64
 		}
 
-		Convey("We should have a party", func() {
+		Convey("We should get an empty body section", func() {
 			So(string(pem.EncodeToMemory(block)), ShouldEqual, lit(`
 				-----BEGIN GRYPT CIPHERTEXT HEADER-----
 				-----END GRYPT CIPHERTEXT HEADER-----
 			`))
+		})
+	})
+
+	Convey("Given some headers", t, func() {
+		block := &pem.Block{
+			Type: "GRYPT CIPHERTEXT HEADER",
+			Headers: map[string]string{
+				"Grypt-Test-Header": "some value",
+				"Grypt-caps-sense": "moar value",
+			},
+		}
+
+		Convey("The serial format is stable and looks nice", func() {
+			So(string(pem.EncodeToMemory(block)), ShouldEqual, lit(`
+				-----BEGIN GRYPT CIPHERTEXT HEADER-----
+				Grypt-Test-Header: some value
+				Grypt-caps-sense: moar value
+				
+				-----END GRYPT CIPHERTEXT HEADER-----
+			`)) // i don't particularly understand why having nonzero headers got us this extra line break at the end, and consider that a bit wrong if there's no body bytes, but okay, whatever.
+		})
+	})
+
+	Convey("Given headers named with leading or trailing spaces", t, func() {
+		block := &pem.Block{
+			Type: "GRYPT CIPHERTEXT HEADER",
+			Headers: map[string]string{
+				"  leading": "x",
+				"trailing  ": "y",
+			},
+		}
+		serial := pem.EncodeToMemory(block)
+
+		Convey("The strange names are preserved in serial form", func() {
+			// i guess this is the appropriate conservative behavior...
+			So(string(serial), ShouldEqual, lit(`
+				-----BEGIN GRYPT CIPHERTEXT HEADER-----
+				  leading: x
+				trailing  : y
+
+				-----END GRYPT CIPHERTEXT HEADER-----
+			`))
+		})
+
+		Convey("The strange names are altered (trimmed) when reheated", func() {
+			// but the conservative approach on serialization doesn't do much good if you can't round-trip it -.-
+			reheated, rest := pem.Decode(serial)
+			So(reheated, ShouldResemble, &pem.Block{
+				Type: "GRYPT CIPHERTEXT HEADER",
+				Headers: map[string]string{
+					"leading": "x",
+					"trailing": "y",
+				},
+			})
+			So(len(rest), ShouldEqual, 0)
 		})
 	})
 }
