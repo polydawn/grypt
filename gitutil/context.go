@@ -1,10 +1,4 @@
-package main
-
-import (
-	"polydawn.net/pogo/gosh"
-)
-
-var git = gosh.Sh("git")
+package gitutil
 
 type Context struct {
 	GryptName    string // name of the current executable (treat it sort of like "$0" in bash).  probably equal to "grypt" (may be an absolute path in tests to a temporary binary).

@@ -10,7 +10,7 @@ import (
 	"code.google.com/p/go.crypto/hkdf"
 )
 
-func GenerateKey(ctx grypt.Context, random bool, password []byte, encryptionScheme grypt.Scheme) {
+func GenerateKey(ctx gitutil.Context, random bool, password []byte, encryptionScheme grypt.Scheme) {
 	var k grypt.Key
 	var err error
 	if random {

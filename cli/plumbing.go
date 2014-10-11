@@ -9,7 +9,7 @@ import (
 	"polydawn.net/grypt/vault"
 )
 
-func PlumbingClean(ctx grypt.Context, in io.Reader, out io.Writer) {
+func PlumbingClean(ctx gitutil.Context, in io.Reader, out io.Writer) {
 	keyDir := filepath.Join(ctx.RepoDataDir, "grypt")
 	k, err := grypt.ReadKey(filepath.Join(keyDir, ctx.Keyring+".key"))
 	if err != nil {
@@ -20,7 +20,7 @@ func PlumbingClean(ctx grypt.Context, in io.Reader, out io.Writer) {
 	}
 }
 
-func PlumbingSmudge(ctx grypt.Context, in io.Reader, out io.Writer) {
+func PlumbingSmudge(ctx gitutil.Context, in io.Reader, out io.Writer) {
 	keyDir := filepath.Join(ctx.RepoDataDir, "grypt")
 	k, err := grypt.ReadKey(filepath.Join(keyDir, ctx.Keyring+".key"))
 	if err != nil {
@@ -31,7 +31,7 @@ func PlumbingSmudge(ctx grypt.Context, in io.Reader, out io.Writer) {
 	}
 }
 
-func PlumbingTextconv(ctx grypt.Context, f string, out io.Writer) {
+func PlumbingTextconv(ctx gitutil.Context, f string, out io.Writer) {
 	keyDir := filepath.Join(ctx.RepoDataDir, "grypt")
 	k, err := grypt.ReadKey(filepath.Join(keyDir, ctx.Keyring+".key"))
 	if err != nil {

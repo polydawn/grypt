@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+
+	"polydawn.net/grypt/gitutil"
+	"polydawn.net/grypt/schema"
 )
 
 /*
@@ -151,8 +154,8 @@ func (c *Content) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-// didn't actually intend to ripe this much out of the main package yet, but i'm having import cycle butthurtz, so here we go
-func Encrypt(ctx grypt.Context, i io.Reader, o io.Writer, k grypt.Key) error {
+// FIXME: THIS WAS NOW ADDRESSED PROPERLY BY THE SCHEMA PACKAGE, REMOVE WITH PREJUDICE
+func Encrypt(ctx gitutil.Context, i io.Reader, o io.Writer, k schema.Key) error {
 	plaintext := new(bytes.Buffer)
 	ciphertext := new(bytes.Buffer)
 	c, err := k.Scheme.NewCipher(k.Key)
