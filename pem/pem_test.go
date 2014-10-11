@@ -1,6 +1,7 @@
 package pem
 
 import (
+	"bytes"
 	"encoding/pem"
 	"strings"
 	"testing"
@@ -195,6 +196,37 @@ func TestPemFormatBasics(t *testing.T) {
 			reheated, rest := pem.Decode(serial)
 			So(reheated, ShouldResemble, block)
 			So(len(rest), ShouldEqual, 0)
+		})
+	})
+
+	Convey("Given some headers", t, func() {
+		block := &pem.Block{
+			Type: "GRYPT CIPHERTEXT HEADER",
+			Headers: map[string]string{
+				"Grypt-Test-Header": "some value",
+				"Grypt-caps-sense":  "moar value",
+			},
+			Bytes: []byte{},
+		}
+		serial := pem.EncodeToMemory(block)
+		lines := bytes.Split(serial, []byte{'\n'})
+		lines[len(lines)-3] = lines[len(lines)-2]
+		lines[len(lines)-2] = []byte{}
+		serial = bytes.Join(lines[:len(lines)-1], []byte{'\n'})
+
+		Convey("When I strip that silly linebreak", func() {
+			So(string(serial), ShouldEqual, lit(`
+				-----BEGIN GRYPT CIPHERTEXT HEADER-----
+				Grypt-Test-Header: some value
+				Grypt-caps-sense: moar value
+				-----END GRYPT CIPHERTEXT HEADER-----
+			`))
+
+			SkipConvey("Everything is the same when reheated", func() {
+				reheated, rest := pem.Decode(serial)
+				So(len(rest), ShouldEqual, 0)
+				So(reheated, ShouldResemble, block)
+			})
 		})
 	})
 }
