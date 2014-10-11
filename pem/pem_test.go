@@ -90,6 +90,9 @@ func TestPemFormatBasics(t *testing.T) {
 		Convey("Everything is the same when reheated", func() {
 			// but the conservative approach on serialization doesn't do much good if you can't round-trip it -.-
 			reheated, rest := pem.Decode(serial)
+			So(reheated.Type, ShouldResemble, block.Type)
+			So(reheated.Headers, ShouldResemble, block.Headers)
+			So(reheated.Bytes, ShouldResemble, block.Bytes)
 			So(reheated, ShouldResemble, block)
 			So(len(rest), ShouldEqual, 0)
 		})
