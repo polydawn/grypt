@@ -169,4 +169,32 @@ func TestPemFormatBasics(t *testing.T) {
 			So(len(rest), ShouldEqual, 0)
 		})
 	})
+
+	Convey("Given really long headers", t, func() {
+		block := &pem.Block{
+			Type: "GRYPT CIPHERTEXT HEADER",
+			Headers: map[string]string{
+				"Ridiculously-long-nonsense-header-r-u-serious-yes-i-am-sam-i-am-i-do-not-like-green-eggs-and-ham-i-do-not-like-them-with-my-jam": "okay then",
+				"What": "this is the value that never ends, it just goes on and on my friends / i started typing it a long long time ago / and i'll be typing it forever just because",
+			},
+			Bytes: []byte{},
+		}
+		serial := pem.EncodeToMemory(block)
+
+		Convey("The serial form playes it straight; there's no wrap", func() {
+			So(string(serial), ShouldEqual, lit(`
+				-----BEGIN GRYPT CIPHERTEXT HEADER-----
+				Ridiculously-long-nonsense-header-r-u-serious-yes-i-am-sam-i-am-i-do-not-like-green-eggs-and-ham-i-do-not-like-them-with-my-jam: okay then
+				What: this is the value that never ends, it just goes on and on my friends / i started typing it a long long time ago / and i'll be typing it forever just because
+
+				-----END GRYPT CIPHERTEXT HEADER-----
+			`))
+		})
+
+		Convey("Everything is the same when reheated", func() {
+			reheated, rest := pem.Decode(serial)
+			So(reheated, ShouldResemble, block)
+			So(len(rest), ShouldEqual, 0)
+		})
+	})
 }
