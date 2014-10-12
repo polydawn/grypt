@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	plaintextSize = 1024
+	plaintextSize = 1021
 
 	plaintext = mkRand(plaintextSize)
 )
