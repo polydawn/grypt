@@ -8,6 +8,7 @@ import (
 	"polydawn.net/grypt/cli"
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/testutil"
+	"strings"
 	"testing"
 )
 
@@ -91,15 +92,11 @@ func TestKeepSecret(t *testing.T) {
 					So(git("status", "--porcelain").Output(), ShouldEqual, "A  .gitattributes\nA  shadowfile\n")
 				})
 
-				Convey("The diff should show the cleartext", func() {
-					// TODO: this might actually be insane, because it relies on exec roundtripping through another grypt process.
+				Convey("The raw staged file should show the ciphertext", func() {
+					// staged diff should have our serial ciphertext -- the inspection we're using here is low level enough that it does not give the diff filter a chance to run
+					stagedLines := strings.Split(string(gitutil.ListStagedFileContents()["shadowfile"]), "\n")
 
-					// staged diff should have our bby
-					// TODO: this test might actually be jumping the gun a little... i don't think the inspection we're using here is going to give the diff filter a chance to run
-					// ...so it should actually probably see the ciphertext.  but we're not done connecting those parts yet, so we'll have to review this again later.
-					So(string(gitutil.ListStagedFileContents()["shadowfile"]), ShouldEqual, "cleartext")
-					SkipSo(1, ShouldEqual, 2) // dummy line to highlight in the report we're not done here
-					// no unstaged changes should be around
+					So(stagedLines[0], ShouldEqual, "-----BEGIN GRYPT CIPHERTEXT HEADER-----")
 					So(git("diff", "--raw").Output(), ShouldEqual, "")
 				})
 
