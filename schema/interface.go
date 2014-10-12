@@ -18,18 +18,6 @@ type Schema interface {
 	Decrypt(input io.Reader, output io.Writer, k Key) error
 }
 
-/*
-	Key struct stores the two byte slices for most symmetric crypto operations:
-	the cipher key and the hmac key.
-
-	This is a simplifying assumption for all the interfaces we currently use, but may break
-	for other kinds of (very) exotic cipher suites we don't yet support.
-*/
-type Key struct {
-	cipherKey []byte
-	hmacKey   []byte
-}
-
 var schemas map[string]Schema = make(map[string]Schema)
 var extraNames map[string]Schema = make(map[string]Schema)
 
