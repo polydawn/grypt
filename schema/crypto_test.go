@@ -71,7 +71,7 @@ func TestRoundTrip(t *testing.T) {
 
 func TestMACFailure(t *testing.T) {
 	for _, sch := range schemas {
-		k := Key{mkRand(sch.KeySize()), mkRand(sch.MACSize())}
+		k := Key{sch, mkRand(sch.KeySize()), mkRand(sch.MACSize())}
 		var err error
 		buf := new(bytes.Buffer)
 		if err := sch.Encrypt(bytes.NewReader(plaintext), iotest.TruncateWriter(buf, int64(plaintextSize-2)), k); err != nil {

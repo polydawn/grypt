@@ -25,7 +25,7 @@ func newKey(sch Schema, entropy io.Reader) (Key, error) {
 	if err != nil {
 		return Key{}, err
 	}
-	return Key{symKey, macKey}, nil
+	return Key{sch, symKey, macKey}, nil
 }
 
 /*

@@ -85,7 +85,7 @@ func OpenCiphertext(in io.Reader, out io.Writer, k schema.Key) Headers {
 	return headerBlock.Headers
 }
 
-func WeaveBasket(ctx gitutil.Context, in io.Reader, out io.Writer, sch schema.Schema, k schema.Key) {
+func WeaveBasket(ctx gitutil.Context, in io.Reader, out io.Writer, k schema.Key) {
 	// FIXME: suddenly, this use of `ctx gitutil.Context` reminds me why that wasn't originally supposed to be in the git package...
 
 	// assemble and output header
@@ -94,7 +94,7 @@ func WeaveBasket(ctx gitutil.Context, in io.Reader, out io.Writer, sch schema.Sc
 		Type: grypt_vault_typestring,
 		Headers: Headers{
 			Header_grypt_version: "1.0",
-			Header_grypt_scheme:  sch.Name(),
+			Header_grypt_scheme:  k.Scheme.Name(),
 			Header_grypt_keyring: "default", // :/ TODO: keyrings
 		},
 		// pem.Block.Bytes is a zero value for us, we're not gonna use b64
@@ -105,7 +105,7 @@ func WeaveBasket(ctx gitutil.Context, in io.Reader, out io.Writer, sch schema.Sc
 	}
 
 	// push the remainder of body through the cipher
-	if err := sch.Encrypt(in, out, k); err != nil {
+	if err := k.Scheme.Encrypt(in, out, k); err != nil {
 		panic(err)
 	}
 }

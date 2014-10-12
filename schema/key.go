@@ -25,6 +25,7 @@ import (
 	@implements encoding.BinaryUnmarshaler
 */
 type Key struct {
+	Scheme    Schema
 	cipherKey []byte
 	hmacKey   []byte
 }
@@ -33,6 +34,10 @@ func (k Key) MarshalBinary() (data []byte, err error) {
 	output := &bytes.Buffer{}
 
 	binary.Write(output, binary.BigEndian, int8(1))
+
+	schemeBytes := []byte(k.Scheme.Name())
+	binary.Write(output, binary.BigEndian, int32(len(schemeBytes)))
+	output.Write(schemeBytes)
 
 	binary.Write(output, binary.BigEndian, int32(len(k.cipherKey)))
 	output.Write(k.cipherKey)
@@ -51,11 +56,22 @@ func (k *Key) UnmarshalBinary(data []byte) error {
 		return err
 	}
 
+	var schemelen int32
+	if err := binary.Read(input, binary.BigEndian, &schemelen); err != nil {
+		return err
+	}
+	schemeBytes := make([]byte, schemelen)
+	_, err := io.ReadAtLeast(input, schemeBytes, int(schemelen))
+	if err != nil {
+		return err
+	}
+	k.Scheme = ParseSchema(string(schemeBytes))
+
 	var key1len int32
 	if err := binary.Read(input, binary.BigEndian, &key1len); err != nil {
 		return err
 	}
-	_, err := io.ReadAtLeast(input, k.cipherKey, int(key1len))
+	_, err = io.ReadAtLeast(input, k.cipherKey, int(key1len))
 	if err != nil {
 		return err
 	}
