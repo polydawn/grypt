@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 
-	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/schema"
 )
 
@@ -85,9 +84,7 @@ func OpenCiphertext(in io.Reader, out io.Writer, k schema.Key) Headers {
 	return headerBlock.Headers
 }
 
-func WeaveBasket(ctx gitutil.Context, in io.Reader, out io.Writer, k schema.Key) {
-	// FIXME: suddenly, this use of `ctx gitutil.Context` reminds me why that wasn't originally supposed to be in the git package...
-
+func WeaveBasket(in io.Reader, out io.Writer, k schema.Key) {
 	// assemble and output header
 	// TODO: support for extra headers, we currently fail at passthrough of headers we don't recognize and that's amateur horseshit
 	headerBlock := &pem.Block{
