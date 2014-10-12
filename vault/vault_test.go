@@ -20,11 +20,11 @@ func TestVaultRoundtrip(t *testing.T) {
 
 		Convey("Vault should produce a ciphertext stream", func() {
 			ciphertext := &bytes.Buffer{}
-			WeaveBasket(cleartext, ciphertext, k)
+			SealEnvelope(cleartext, ciphertext, k)
 
 			Convey("Vault should be able to return the cleartext", func() {
 				reheated := &bytes.Buffer{}
-				headers := OpenCiphertext(ciphertext, reheated, k)
+				headers := OpenEnvelope(ciphertext, reheated, k)
 
 				So(headers[Header_grypt_version], ShouldEqual, "1.0")
 				So(headers[Header_grypt_scheme], ShouldEqual, sch.Name())

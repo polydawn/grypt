@@ -47,7 +47,11 @@ var Nonoptional_headers = []string{
 
 type Headers map[string]string
 
-func OpenCiphertext(in io.Reader, out io.Writer, k schema.Key) Headers {
+/*
+	in: a stream expected to contain grypt headers (in PEM format) followed by the ciphertext binary.
+	out: a stream of the cleartext (the headers are returned).
+*/
+func OpenEnvelope(in io.Reader, out io.Writer, k schema.Key) Headers {
 	// read headers
 	// note this involves some really shitty and arbitrary assumptions -- like, your header won't be longer than a meg and nobody cares if we overread on the input -- because this pem implementation doesn't have a streamable reader.
 	// i understand this interface probably predates a lot of other more refined parts of the standard library, and i understand the no-breaking-changees desires at this point, but boy does it hurt to look at it, and all the more given how wonderfully well thought out the other encoding interfaces are.
@@ -84,7 +88,11 @@ func OpenCiphertext(in io.Reader, out io.Writer, k schema.Key) Headers {
 	return headerBlock.Headers
 }
 
-func WeaveBasket(in io.Reader, out io.Writer, k schema.Key) {
+/*
+	in: a stream of cleartext.
+	out: a stream of the headers (in PEM format) followed by the ciphertext binary.
+*/
+func SealEnvelope(in io.Reader, out io.Writer, k schema.Key) {
 	// assemble and output header
 	// TODO: support for extra headers, we currently fail at passthrough of headers we don't recognize and that's amateur horseshit
 	headerBlock := &pem.Block{
