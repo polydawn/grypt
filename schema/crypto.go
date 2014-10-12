@@ -25,7 +25,7 @@ func newKey(sch Schema, entropy io.Reader) (Key, error) {
 	if err != nil {
 		return Key{}, err
 	}
-	return Key{symKey, macKey}, nil
+	return Key{sch, symKey, macKey}, nil
 }
 
 /*
@@ -75,11 +75,8 @@ func buildEncrypter(sch Schema, macFactory func() hash.Hash, cipherFactory func(
 		}
 
 		// commit the expected ciphertext size to output
-		blocks := plaintext.Len() / sch.BlockSize()
-		if plaintext.Len()%sch.BlockSize() != 0 {
-			blocks++
-		}
-		binary.Write(output, binary.BigEndian, int64(blocks*sch.BlockSize()))
+		// using stream ciphers (currently all we support) this is the same as the plaintext size
+		binary.Write(output, binary.BigEndian, int64(plaintext.Len()))
 
 		// push the input body through the cipher, and the ciphertext both out and through the hmac
 		mw = io.MultiWriter(output, hmacMsg)

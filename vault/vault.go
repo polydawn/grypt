@@ -1,36 +1,22 @@
 package vault
 
 import (
-	"bufio"
 	"bytes"
-	"crypto/cipher"
-	"crypto/hmac"
+	"encoding/pem"
 	"fmt"
 	"io"
-	"regexp"
 
-	grypt "polydawn.net/grypt"
+	"polydawn.net/grypt/schema"
 )
 
+const grypt_vault_typestring = "GRYPT CIPHERTEXT HEADER"
+
 /*
-	Grypt content vault format headers are simple string key-value pairs.
-	They roughly follow the outline of git commit message suffixes:
-
-	- keys should be formatted as "Title-Case-Phrases:" terminated with a colon, then whitespace.
-	  - keys may not contain whitespace or colon characters.
-	  - keys are case sensitive.
-	  - it is strongly recommended that keys only contain alphanum and dashes.
-	- values follow keys, and must be a single line.
-
-	Keys and values are both interpretted as UTF-8 sequences.  There is no strict length on either keys or values.
-
 	Certain keys are well-known.  Those are declared in consts in this package.
 	Other keys will be passed through when grypt decrypts, alters cleartext payload, and recrypts, even if grypt does not recognize them as well-known keys.
+
+	Headers prefixed with "Grypt-" are reserved for -- you guessed it -- grypt.  They should not be used by any other extensions.
 */
-type Headers map[string]string
-
-// ^ note: goddamnit, ordered maps again.  it would certainly be charming to put well-known keys first, and maintain orders of others so diffs aren't randomly shitty.  as it is we'll have to sort and call it a day.
-
 const (
 	/*
 		Names the version of grypt that produced the current content.
@@ -59,140 +45,72 @@ var Nonoptional_headers = []string{
 	Header_grypt_keyring,
 }
 
-var header_regexp = regexp.MustCompile("^([[:upper:]][[:alnum:]-]*):[[:space:]]*([[:alnum:][:punct:]]*)[[:space:]]*")
+type Headers map[string]string
 
-type Content struct {
-	Headers    Headers
-	ciphertext []byte // buffer might turn out more appropriate
-	IV         []byte // probably these should just go as a part of the b64'd ciphertext?
-	MAC        []byte // probably these should just go as a part of the b64'd ciphertext?
+/*
+	in: a stream expected to contain grypt headers (in PEM format) followed by the ciphertext binary.
+	out: a stream of the cleartext (the headers are returned).
+*/
+func OpenEnvelope(in io.Reader, out io.Writer, k schema.Key) Headers {
+	// read headers
+	// note this involves some really shitty and arbitrary assumptions -- like, your header won't be longer than a meg and nobody cares if we overread on the input -- because this pem implementation doesn't have a streamable reader.
+	// i understand this interface probably predates a lot of other more refined parts of the standard library, and i understand the no-breaking-changees desires at this point, but boy does it hurt to look at it, and all the more given how wonderfully well thought out the other encoding interfaces are.
+	shitbuf := make([]byte, 1024*1024)
+	n, err := in.Read(shitbuf)
+	if err != nil && err != io.EOF {
+		panic(err)
+	}
+	headerBlock, rest := pem.Decode(shitbuf[:n])
+	// OH MY GOD this is a deserialization function that has no error returns.  could this possibly be more wrong.
+	if headerBlock == nil {
+		panic(fmt.Errorf("not a valid grypt ciphertext file -- no headers detectable"))
+	}
+
+	// check version, parse scheme, validate headers in general
+	var schemeName string
+	var ok bool // ... i don't actually want to keep this, but i can't use `:= later or i'll overshadow the *other* return that i do want to keep.  -.-
+	if _, ok := headerBlock.Headers[Header_grypt_version]; !ok {
+		// we can switch on this in the future, but right now, we don't know versioned behaviors
+		panic(fmt.Errorf("not a valid grypt ciphertext file -- missing required header \"%s\"", Header_grypt_version))
+	}
+	if schemeName, ok = headerBlock.Headers[Header_grypt_scheme]; !ok {
+		panic(fmt.Errorf("not a valid grypt ciphertext file -- missing required header \"%s\"", Header_grypt_scheme))
+	}
+	if _, ok := headerBlock.Headers[Header_grypt_keyring]; !ok {
+		// TODO: keyrings
+		panic(fmt.Errorf("not a valid grypt ciphertext file -- missing required header \"%s\"", Header_grypt_keyring))
+	}
+	sch := schema.ParseSchema(schemeName)
+
+	// push the remainder of body through the cipher
+	sch.Decrypt(io.MultiReader(bytes.NewBuffer(rest), in), out, k)
+
+	return headerBlock.Headers
 }
 
-const (
-	grypt_vault_start = "----- BEGIN GRYPT CIPHERTEXT HEADER -----\n"
-	grypt_vault_end   = "----- END GRYPT CIPHERTEXT HEADER -----\n"
-)
-
-func (c Content) MarshalBinary() (data []byte, err error) {
-	var buf bytes.Buffer
-
-	// start header
-	fmt.Fprintf(&buf, grypt_vault_start)
-
-	// place certain non-optional headers at the front of the parade.
-	for _, key := range Nonoptional_headers {
-		value, ok := c.Headers[key]
-		if !ok {
-			return nil, fmt.Errorf("vault requires header %s", key)
-		}
-		fmt.Fprintf(&buf, "%s: %s\n", key, value)
+/*
+	in: a stream of cleartext.
+	out: a stream of the headers (in PEM format) followed by the ciphertext binary.
+*/
+func SealEnvelope(in io.Reader, out io.Writer, k schema.Key) {
+	// assemble and output header
+	// TODO: support for extra headers, we currently fail at passthrough of headers we don't recognize and that's amateur horseshit
+	headerBlock := &pem.Block{
+		Type: grypt_vault_typestring,
+		Headers: Headers{
+			Header_grypt_version: "1.0",
+			Header_grypt_scheme:  k.Scheme.Name(),
+			Header_grypt_keyring: "default", // :/ TODO: keyrings
+		},
+		// pem.Block.Bytes is a zero value for us, we're not gonna use b64
+	}
+	headerBytes := pem.EncodeToMemory(headerBlock)
+	if _, err := out.Write(headerBytes); err != nil {
+		panic(err)
 	}
 
-	// iterate over remaining headers.  skip the ones already included above.
-L1:
-	for key, value := range c.Headers {
-		for _, already := range Nonoptional_headers {
-			if key == already {
-				continue L1
-			}
-		}
-		fmt.Fprintf(&buf, "%s: %s\n", key, value)
+	// push the remainder of body through the cipher
+	if err := k.Scheme.Encrypt(in, out, k); err != nil {
+		panic(err)
 	}
-
-	// end header
-	fmt.Fprintf(&buf, grypt_vault_end)
-
-	// drop ciphertext.  length is embedded in the binary form.
-	buf.Write(c.ciphertext)
-
-	// trailing whitespace to moderately decrease the odds of your terminal crying if you cat this file.
-	buf.WriteRune('\n')
-	buf.WriteRune('\n')
-
-	return buf.Bytes(), nil
-}
-
-func (c *Content) UnmarshalBinary(data []byte) error {
-	reader := bufio.NewReader(bytes.NewBuffer(data))
-	var line string
-	var err error
-
-	// first line absolutely must be our header
-	if line, err = reader.ReadString('\n'); err != nil {
-		return err
-	}
-	if line != grypt_vault_start {
-		return fmt.Errorf("invalid grypt vault header: doesn't look like grypt vault ciphertext")
-	}
-
-	// read one line at a time until we see the end of our header
-	var rows []string
-	for {
-		if line, err = reader.ReadString('\n'); err != nil {
-			return err
-		}
-		rows = append(rows, line)
-		if line == grypt_vault_end {
-			break
-		}
-	}
-
-	// parse all those header entries
-	c.Headers = Headers{}
-	for _, row := range rows {
-		matches := header_regexp.FindStringSubmatch(row)
-		if len(matches) != 3 {
-			continue // this isn't one of ours
-			// consider adding a format verification step as a CheckKey subcommand that could warn about bananas formats, in case someone starts writing their own headers for some unearthly reason
-		}
-		c.Headers[matches[1]] = matches[2]
-	}
-
-	// we can now act like a reader for the payload decryption (which should know enough about its own format to not over-read; we may have more bytes trailing than just payload)
-
-	return nil
-}
-
-// didn't actually intend to ripe this much out of the main package yet, but i'm having import cycle butthurtz, so here we go
-func Encrypt(ctx grypt.Context, i io.Reader, o io.Writer, k grypt.Key) error {
-	plaintext := new(bytes.Buffer)
-	ciphertext := new(bytes.Buffer)
-	c, err := k.Scheme.NewCipher(k.Key)
-	if err != nil {
-		return err
-	}
-	hmacIV := hmac.New(k.Scheme.Hash(), k.HMAC)
-	hmacMsg := hmac.New(k.Scheme.Hash(), k.HMAC)
-	mw := io.MultiWriter(plaintext, hmacIV)
-
-	// Read in the file, calculating the IV and buffering it
-	if _, err := io.Copy(mw, i); err != nil {
-		return err
-	}
-	iv := hmacIV.Sum(nil)[:k.Scheme.BlockSize()]
-
-	// write ciphertext into buffer and the hmac
-	mw = io.MultiWriter(ciphertext, hmacMsg)
-	s := cipher.StreamWriter{
-		S: cipher.NewCTR(c, iv),
-		W: mw,
-	}
-	_, err = io.Copy(s, plaintext)
-	if err != nil {
-		return err
-	}
-
-	// serialize our header and append the encrypted file
-	// header, err := asn1.Marshal(Header{k.Scheme, iv, hmacMsg.Sum(nil)})
-	headers := Headers{
-		Header_grypt_version: ctx.GryptVersion,
-		Header_grypt_scheme:  fmt.Sprintf("%s", k.Scheme), // TODO this does roughly "what I mean", but should probably be replaced by a marshaller spec on a solid scheme type
-		Header_grypt_keyring: ctx.Keyring,
-	}
-	serial, err := Content{headers, iv, hmacMsg.Sum(nil), ciphertext.Bytes()}.MarshalBinary()
-	if err != nil {
-		return err
-	}
-	_, err = o.Write(serial)
-	return err
 }

@@ -6,12 +6,14 @@ import (
 
 	"code.google.com/p/go.crypto/ssh/terminal"
 	"github.com/codegangsta/cli"
-	grypt "polydawn.net/grypt"
+
+	"polydawn.net/grypt/gitutil"
+	"polydawn.net/grypt/schema"
 )
 
 func Run(myName string, args ...string) {
 	// set up shared bits of context information.  any subcommand will use this.
-	ctx := grypt.DetectContext()
+	ctx := gitutil.DetectContext()
 	ctx.GryptName = myName
 	ctx.GryptVersion = "v0.1"
 
@@ -74,10 +76,7 @@ func Run(myName string, args ...string) {
 				},
 			},
 			Action: func(c *cli.Context) {
-				encryptionScheme, err := grypt.ParseScheme(c.String("scheme"))
-				if err != nil {
-					panic(fmt.Sprintf("Unable to determine encryption scheme: %v", err))
-				}
+				encryptionScheme := schema.ParseSchema(c.String("scheme"))
 
 				password := []byte(c.String("password"))
 				if len(password) == 0 {

@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"regexp"
 
-	grypt "polydawn.net/grypt"
 	"polydawn.net/pogo/gosh"
 )
 
@@ -16,7 +15,7 @@ var git = gosh.Sh("git")
 
 var br = []byte("\n")
 
-func PutGitFilterConfig(ctx grypt.Context) {
+func PutGitFilterConfig(ctx Context) {
 	git("config", "filter.grypt.smudge", fmt.Sprintf("%s git-smudge %%f", ctx.GryptName))()
 	git("config", "filter.grypt.clean", fmt.Sprintf("%s git-clean %%f", ctx.GryptName))()
 	// TODO: experiment with the 'required' config parameter, see `man gitattributues`.  making ourselves 'required' but exit 0 when a key is absent could give us desirable behavior like erroring when the command path isn't working.
@@ -44,7 +43,7 @@ type GitattribLine struct {
 
 var rPattern = regexp.MustCompile("^[^\\s]*")
 
-func ReadRepoGitAttribs(ctx grypt.Context) *Gitattribs {
+func ReadRepoGitAttribs(ctx Context) *Gitattribs {
 	return ReadGitAttribsFile(filepath.Join(ctx.RepoWorkDir, ".gitattributes"))
 }
 
@@ -89,7 +88,7 @@ func (ga *Gitattribs) SaveFile(filename string) {
 	}
 }
 
-func (ga *Gitattribs) SaveRepoGitAttribs(ctx grypt.Context) {
+func (ga *Gitattribs) SaveRepoGitAttribs(ctx Context) {
 	ga.SaveFile(filepath.Join(ctx.RepoWorkDir, ".gitattributes"))
 }
 

@@ -1,59 +1,38 @@
 package vault
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
+	"bytes"
+	"crypto/rand"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
+
+	"polydawn.net/grypt/schema"
 )
 
-func TestVaultHeadersRoundtrip(t *testing.T) {
-	Convey("Given some valid serialized headers", t, func() {
-		headers := Headers{
-			Header_grypt_version: "v1000",
-			Header_grypt_scheme:  "rot13",
-			Header_grypt_keyring: "default",
-			"A":                  "b",
-		}
-		serial, err := Content{
-			Headers: headers,
-		}.MarshalBinary()
+func TestVaultRoundtrip(t *testing.T) {
+	Convey("Given a cleartext and choice of cipher scheme", t, func() {
+		sch := schema.Aes256sha256ctr{}
+		k, err := sch.NewKey(rand.Reader)
 		So(err, ShouldBeNil)
+		str := "cleartext! :D"
+		cleartext := bytes.NewBuffer([]byte(str))
 
-		Convey("We should get unmarshal the same headers back", func() {
-			reheated := &Content{}
-			err := reheated.UnmarshalBinary(serial)
-			So(err, ShouldBeNil)
-			So(reheated.Headers, ShouldResemble, headers)
-		})
-	})
+		Convey("Vault should produce a ciphertext stream", func() {
+			ciphertext := &bytes.Buffer{}
+			SealEnvelope(cleartext, ciphertext, k)
 
-	Convey("Given some mix of valid and invalid serialized headers", t, func() {
-		headers := Headers{
-			Header_grypt_version: "v1000",
-			Header_grypt_scheme:  " rot13 ",
-			Header_grypt_keyring: "default",
-			"A":                  "b",
-			"c":                  "d",
-			"clearly not":        "d",
-		}
-		serial, err := Content{
-			Headers: headers,
-		}.MarshalBinary()
-		So(err, ShouldBeNil)
+			Convey("Vault should be able to return the cleartext", func() {
+				reheated := &bytes.Buffer{}
+				headers := OpenEnvelope(ciphertext, reheated, k)
 
-		reheated := &Content{}
-		err = reheated.UnmarshalBinary(serial)
-		So(err, ShouldBeNil)
+				So(headers[Header_grypt_version], ShouldEqual, "1.0")
+				So(headers[Header_grypt_scheme], ShouldEqual, sch.Name())
+				So(headers[Header_grypt_keyring], ShouldEqual, "default")
 
-		Convey("Leading and trailing whitespace should be trimmed", func() {
-			So(reheated.Headers[Header_grypt_scheme], ShouldEqual, "rot13")
-		})
-
-		Convey("Invalid header entries should be absent", func() {
-			_, err := reheated.Headers["c"]
-			So(err, ShouldNotBeNil)
-			_, err = reheated.Headers["clearly not"]
-			So(err, ShouldNotBeNil)
-			// So(len(reheated.Headers), ShouldEqual, 2) // rong, because of the forced headers
+				So(len(reheated.Bytes()), ShouldEqual, len([]byte(str)))
+				So(string(reheated.Bytes()), ShouldEqual, str)
+			})
 		})
 	})
 }

@@ -2,14 +2,14 @@ package cli
 
 import (
 	"os"
-	grypt "polydawn.net/grypt"
+
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/pogo/gosh"
 )
 
 var git = gosh.Sh("git")
 
-func KeepSecret(ctx grypt.Context, files []string) {
+func KeepSecret(ctx gitutil.Context, files []string) {
 	// put git config.  probably already exists, but this should be an effectively idempotent set in that case.
 	gitutil.PutGitFilterConfig(ctx)
 
