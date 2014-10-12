@@ -71,6 +71,7 @@ func (k *Key) UnmarshalBinary(data []byte) error {
 	if err := binary.Read(input, binary.BigEndian, &key1len); err != nil {
 		return err
 	}
+	k.cipherKey = make([]byte, key1len)
 	_, err = io.ReadAtLeast(input, k.cipherKey, int(key1len))
 	if err != nil {
 		return err
@@ -80,7 +81,8 @@ func (k *Key) UnmarshalBinary(data []byte) error {
 	if err := binary.Read(input, binary.BigEndian, &key2len); err != nil {
 		return err
 	}
-	_, err = io.ReadAtLeast(input, k.hmacKey, int(key1len))
+	k.hmacKey = make([]byte, key2len)
+	_, err = io.ReadAtLeast(input, k.hmacKey, int(key2len))
 	if err != nil {
 		return err
 	}
