@@ -2,8 +2,10 @@ package schema
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/binary"
 	"io"
+	"os"
 )
 
 /*
@@ -68,4 +70,49 @@ func (k *Key) UnmarshalBinary(data []byte) error {
 	}
 
 	return nil
+}
+
+/*
+	base64 encode and write key 'k' to file 'f'
+*/
+func WriteKey(f string, k Key) error {
+	bits, err := k.MarshalBinary()
+	if err != nil {
+		return err
+	}
+	file, err := os.Create(f)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	enc := base64.NewEncoder(base64.StdEncoding, file)
+	_, err = bytes.NewBuffer(bits).WriteTo(enc)
+	if err != nil {
+		return err
+	}
+	enc.Close()
+	return nil
+}
+
+/*
+	read and decode a key from file 'f'
+*/
+func ReadKey(f string) (Key, error) {
+	k := Key{}
+	bits := new(bytes.Buffer)
+	file, err := os.Open(f)
+	if err != nil {
+		return Key{}, err
+	}
+	defer file.Close()
+	dec := base64.NewDecoder(base64.StdEncoding, file)
+	_, err = bits.ReadFrom(dec)
+	if err != nil {
+		return Key{}, err
+	}
+	err = k.UnmarshalBinary(bits.Bytes())
+	if err != nil {
+		return Key{}, err
+	}
+	return k, nil
 }
