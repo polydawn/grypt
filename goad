@@ -26,7 +26,8 @@ case "$1" in
 		go build -o $name $pkg/main
 		;;
 	test)
-		go test -i -v "$SUBSECTION"
+		go test -i "$SUBSECTION" &&
+		go test -v "$SUBSECTION"
 		;;
 	install)
 		go install $pkg
