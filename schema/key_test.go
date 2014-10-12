@@ -21,7 +21,7 @@ func TestKeyMarshalling(t *testing.T) {
 				k2 := &Key{}
 				err := k2.UnmarshalBinary(serial)
 				So(err, ShouldBeNil)
-				So(k2, ShouldResemble, k)
+				So(k2, ShouldResemble, &k)
 			})
 		})
 	})
