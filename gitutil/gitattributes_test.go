@@ -51,7 +51,7 @@ func TestGitattributesFiltering(t *testing.T) {
 			Convey("The number of lines should increment", func() {
 				So(len(ga.Lines), ShouldEqual, 6)
 			})
-			Convey("The existing entry should now speak of grypt", func() {
+			Convey("The new entry should now speak of grypt", func() {
 				So(ga.Lines[5].Pattern, ShouldEqual, "you/aint/never/seen")
 				So(string(ga.Lines[5].Raw), ShouldEqual, "you/aint/never/seen filter=grypt diff=grypt")
 			})
