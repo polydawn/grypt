@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"polydawn.net/grypt/cli"
 	"polydawn.net/grypt/gitutil"
 	"polydawn.net/grypt/testutil"
 	"strings"
@@ -27,7 +26,7 @@ func TestGenerateKey(t *testing.T) {
 			})
 
 			Convey("When 'grypt generate-key' is called", func() {
-				cli.Run(
+				Run(
 					"irrelephant",
 					"grypt",
 					"generate-key",
@@ -60,7 +59,7 @@ func TestKeepSecret(t *testing.T) {
 
 			git("init")()
 			git("commit")("--allow-empty", "-m", "initial commit")()
-			cli.Run(
+			Run(
 				"irrelephant",
 				"grypt",
 				"generate-key",
@@ -70,7 +69,7 @@ func TestKeepSecret(t *testing.T) {
 			Convey("When 'grypt keep-secret shadowfile' is called", func() {
 				err := ioutil.WriteFile("shadowfile", []byte("cleartext"), 0644)
 				So(err, ShouldBeNil)
-				cli.Run(
+				Run(
 					filepath.Join(gdir, "grypt"),
 					"grypt",
 					"keep-secret",
