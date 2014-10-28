@@ -201,4 +201,36 @@ func TestKeepSecret(t *testing.T) {
 			})
 		}),
 	)
+
+	Convey("Given a clone of a repo with secrets", t,
+		testutil.WithTmpdir(func() {
+			So(os.Mkdir("upstream", 0755), ShouldBeNil)
+			So(os.Chdir("upstream"), ShouldBeNil)
+
+			git("init")()
+			git("commit")("--allow-empty", "-m", "initial commit")()
+			Run(
+				"irrelephant",
+				"grypt",
+				"generate-key",
+				"--password", "asdf", // do not want interactive prompt to be hit in tests
+			)
+			So(ioutil.WriteFile("shadowfile", []byte("cleartext"), 0644), ShouldBeNil)
+			Run(
+				filepath.Join(gdir, "grypt"),
+				"grypt",
+				"keep-secret",
+				"shadowfile",
+			)
+
+			So(os.Chdir(".."), ShouldBeNil)
+
+			git("clone", "./upstream", "consumer")() // this not panicking is important, for starters.
+			So(os.Chdir("consumer"), ShouldBeNil)
+
+			Convey("", func() {
+
+			})
+		}),
+	)
 }
