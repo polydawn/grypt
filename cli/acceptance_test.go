@@ -54,6 +54,25 @@ func TestKeepSecret(t *testing.T) {
 	//git := git(gosh.Env{"PATH": gpath})
 	//os.Setenv("PATH", gpath)
 
+	Convey("Given a new repo", t,
+		testutil.WithTmpdir(func() {
+			git("init")()
+			git("commit")("--allow-empty", "-m", "initial commit")()
+
+			Convey("When 'grypt keep-secret' is called with no args", func() {
+				Convey("We should exit 1", nil)
+			})
+
+			Convey("When 'grypt keep-secret not-a-file' is called", func() {
+				Convey("We should exit 1", nil)
+			})
+
+			Convey("When 'grypt keep-secret some-dir' is called", func() {
+				Convey("We should exit 1", nil)
+			})
+		}),
+	)
+
 	Convey("Given a new repo with grypt already past generate-key", t,
 		testutil.WithTmpdir(func() {
 
@@ -106,6 +125,21 @@ func TestKeepSecret(t *testing.T) {
 
 					Convey("The diff should show the ciphertext", nil)
 				})
+			})
+
+			Convey("When 'grypt keep-secret already-staged-file' is called", func() {
+				Convey("We should ...?", nil)
+				// error?
+				// replace the staged content with the encrypted version?
+				// depends on whether previously committed?  warn if so?
+				// remember that our security model is based on the presumption you still have faith in your own local disk; you just don't want to push anything too interesting.
+			})
+
+			Convey("When 'grypt keep-secret already-committed-file' is called", func() {
+				Convey("We should ...?", nil)
+				// error?  warn (loudly)?
+				// replace the staged content with the encrypted version?
+				// how do diffs look when we add a gitattribute for a path that previously existed but didn't have the attribute?
 			})
 		}),
 	)
