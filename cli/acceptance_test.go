@@ -223,13 +223,50 @@ func TestKeepSecret(t *testing.T) {
 				"shadowfile",
 			)
 
+			git("commit")("-m", "keeping a secret")()
+
 			So(os.Chdir(".."), ShouldBeNil)
 
 			git("clone", "./upstream", "consumer")() // this not panicking is important, for starters.
 			So(os.Chdir("consumer"), ShouldBeNil)
 
 			Convey("", func() {
+				logLines := strings.Split(git("log", "--oneline").Output(), "\n")
+				So(len(logLines), ShouldEqual, 3) // the empty initial commit, and the commit where we added the secret (and a trailing line)
 
+				Convey("No files are staged or modified", func() {
+					So(git("status", "--porcelain").Output(), ShouldEqual, "")
+				})
+
+				Convey("The dircache should contain nothing", func() {
+					stagedLines := strings.Split(string(gitutil.ListStagedFileContents()["shadowfile"]), "\n")
+					So(len(stagedLines), ShouldEqual, 1)
+					So(stagedLines[0], ShouldEqual, "")
+				})
+
+				Convey("The diff should be clean", func() {
+					So(git("diff", "--raw", "shadowfile").Output(), ShouldEqual, "")
+				})
+
+				Convey("The working tree should show the ciphertext", func() {
+					worktreeBytes, _ := ioutil.ReadFile("shadowfile")
+					worktreeLines := strings.Split(string(worktreeBytes), "\n")
+					So(worktreeLines[0], ShouldEqual, "-----BEGIN GRYPT CIPHERTEXT HEADER-----")
+				})
+
+				Convey("After I perform a checkout", func() {
+					// i mean, this certainly shouldn't change anything.  but let's just check.
+					git("checkout", ".")()
+
+					Convey("The diff should be empty", func() {
+						So(git("diff", "--raw", "shadowfile").Output(), ShouldEqual, "")
+					})
+					Convey("The working tree should show the ciphertext", func() {
+						worktreeBytes, _ := ioutil.ReadFile("shadowfile")
+						worktreeLines := strings.Split(string(worktreeBytes), "\n")
+						So(worktreeLines[0], ShouldEqual, "-----BEGIN GRYPT CIPHERTEXT HEADER-----")
+					})
+				})
 			})
 		}),
 	)
