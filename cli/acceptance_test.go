@@ -117,12 +117,71 @@ func TestKeepSecret(t *testing.T) {
 					So(git("diff", "--raw").Output(), ShouldEqual, "")
 				})
 
-				Convey("If I nuke the gitattributes", func() {
-					//TODO
+				Convey("If I nuke the gitattributes on disk", func() {
+					os.Remove(".gitattributes")
 
 					// '--no-ext-diff' or '--no-textconv' might be alternative ways to test this
 
-					Convey("The diff should show the ciphertext", nil)
+					Convey("The secret file should still be staged", func() {
+						So(git("status", "--porcelain").Output(), ShouldEqual, "AD .gitattributes\nA  shadowfile\n")
+					})
+
+					Convey("The dircache should contain the ciphertext", func() {
+						stagedLines := strings.Split(string(gitutil.ListStagedFileContents()["shadowfile"]), "\n")
+						So(stagedLines[0], ShouldEqual, "-----BEGIN GRYPT CIPHERTEXT HEADER-----")
+					})
+
+					Convey("The diff should be empty", func() {
+						So(git("diff", "--raw", "shadowfile").Output(), ShouldEqual, "")
+					})
+
+					Convey("The working tree should show the cleartext", func() {
+
+					})
+				})
+
+				Convey("If I nuke the gitattributes on disk and dircache", func() {
+					os.Remove(".gitattributes")
+					git("rm", ".gitattributes")()
+
+					// NOW things are different.  git will use the staged gitattributes if there isn't one on disk!
+
+					// all of these assertions describe what happens when we have a secret staged but git isn't configured to handle it; might be able to use same assertions for both removed gitattributes or .git/config.
+					// and actually, the form of these adapted to post-commit... should look quite a lot like when there's no key or the lock subcommand is called
+
+					Convey("The secret file is still staged and now considered modified", func() {
+						So(git("status", "--porcelain").Output(), ShouldEqual, "AM shadowfile\n")
+					})
+
+					Convey("The dircache should contain the ciphertext", func() {
+						stagedLines := strings.Split(string(gitutil.ListStagedFileContents()["shadowfile"]), "\n")
+						So(stagedLines[0], ShouldEqual, "-----BEGIN GRYPT CIPHERTEXT HEADER-----")
+					})
+
+					Convey("The diff should be dirty", func() {
+						// Since we still have the cleartext on disk, and git no longer knows how to filter things, git sees this as a "change".
+						// FUTURE: Contemplate: would it make sense to install a pre-commit hook that looks for files covered by a grypt filter attribute, and abort the commit if there's a staged change to that file that doesn't look like ciphertext?
+						So(git("diff", "--raw", "shadowfile").Output(), ShouldNotEqual, "")
+					})
+
+					Convey("The working tree should show the cleartext", func() {
+						worktreeBytes, _ := ioutil.ReadFile("shadowfile")
+						worktreeLines := strings.Split(string(worktreeBytes), "\n")
+						So(worktreeLines[0], ShouldEqual, "cleartext")
+					})
+
+					Convey("After I perform a checkout", func() {
+						git("checkout", ".")()
+
+						Convey("The diff should be empty", func() {
+							So(git("diff", "--raw", "shadowfile").Output(), ShouldEqual, "")
+						})
+						Convey("The working tree should show the ciphertext", func() {
+							worktreeBytes, _ := ioutil.ReadFile("shadowfile")
+							worktreeLines := strings.Split(string(worktreeBytes), "\n")
+							So(worktreeLines[0], ShouldEqual, "-----BEGIN GRYPT CIPHERTEXT HEADER-----")
+						})
+					})
 				})
 			})
 
