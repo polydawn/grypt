@@ -53,6 +53,10 @@ case "$1" in
 	convey)
 		go install github.com/smartystreets/goconvey && "$GOPATH"/bin/goconvey
 		;;
+	cover)
+		for package in `go list ./... | sed "s#^_${PWD}#${pkg}#"` ; do rm -f cover.out ; (eval `goad env` ; export GOPATH ; echo ==== ; (go test -coverprofile=cover.out $package) && echo ---- && go tool cover -func=cover.out && echo ---- && go tool cover -html=cover.out ; echo ====); done
+		rm -f cover.out
+		;;
 	*)
 		echo "Usage: $0 {init|build|test|install|fmt|doc}" 1>&2;
 		exit 1
