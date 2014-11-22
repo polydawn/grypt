@@ -30,7 +30,7 @@ case "$1" in
 		git submodule update --init
 		;;
 	build)
-		go build -o $name $pkg/main
+		go build
 		;;
 	test)
 		go test -i "$SUBSECTION" &&
