@@ -1,14 +1,15 @@
 package cli
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"polydawn.net/grypt/gitutil"
-	"polydawn.net/grypt/testutil"
 	"strings"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
+	"polydawn.net/grypt/gitutil"
+	"polydawn.net/grypt/testutil"
 )
 
 //var git = gosh.Sh("git")
@@ -17,7 +18,7 @@ func TestGenerateKey(t *testing.T) {
 	testutil.Hideme(func() {
 		Convey("Given a new git repo with at least one commit", t, func() {
 			git("init")()
-			git("commit")("--allow-empty", "-m", "initial commit")()
+			git("commit", "--allow-empty", "-m", "initial commit")()
 
 			Convey("There should be no evidence of grypt yet", func() {
 				_, err := os.Stat(".git/grypt/")
@@ -57,7 +58,7 @@ func TestKeepSecret(t *testing.T) {
 	Convey("Given a new repo", t,
 		testutil.WithTmpdir(func() {
 			git("init")()
-			git("commit")("--allow-empty", "-m", "initial commit")()
+			git("commit", "--allow-empty", "-m", "initial commit")()
 
 			Convey("When 'grypt keep-secret' is called with no args", func() {
 				Convey("We should exit 1", nil)
@@ -77,7 +78,7 @@ func TestKeepSecret(t *testing.T) {
 		testutil.WithTmpdir(func() {
 
 			git("init")()
-			git("commit")("--allow-empty", "-m", "initial commit")()
+			git("commit", "--allow-empty", "-m", "initial commit")()
 			Run(
 				"irrelephant",
 				"grypt",
@@ -208,7 +209,7 @@ func TestKeepSecret(t *testing.T) {
 			So(os.Chdir("upstream"), ShouldBeNil)
 
 			git("init")()
-			git("commit")("--allow-empty", "-m", "initial commit")()
+			git("commit", "--allow-empty", "-m", "initial commit")()
 			Run(
 				"irrelephant",
 				"grypt",
@@ -223,7 +224,7 @@ func TestKeepSecret(t *testing.T) {
 				"shadowfile",
 			)
 
-			git("commit")("-m", "keeping a secret")()
+			git("commit", "-m", "keeping a secret")()
 
 			So(os.Chdir(".."), ShouldBeNil)
 
