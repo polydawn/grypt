@@ -56,7 +56,7 @@ func BuildGrypt() string {
 	// exec `go build` with a GOPATH based on the project dir and have it put a grypt exectuable in our tempdir.
 	// we can leave stdin/stdout/stderr connected to the compiler exec because it's silent, unless something goes wrong in which case we do quite want to see it.
 	g := gosh.Sh("go")(gosh.Env{"GOPATH": filepath.Join(projectBase, ".gopath")})
-	g("build", "-o", filepath.Join(tmpdir, "grypt"), "polydawn.net/grypt/main")(gosh.DefaultIO)()
+	g("build", "-o", filepath.Join(tmpdir, "grypt"), "polydawn.net/grypt")(gosh.DefaultIO)()
 
 	return tmpdir
 }
