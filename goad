@@ -5,7 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$DIR"
 export GOPATH="$PWD"/.gopath/
 export BASEDIR="$PWD"
-PATH=".:$PATH"
+
 
 # subsection arg?
 [ -z "$2" ] && SUBSECTION="./..." || SUBSECTION="./$2"
@@ -54,7 +54,7 @@ case "$1" in
 		go install github.com/smartystreets/goconvey && "$GOPATH"/bin/goconvey
 		;;
 	cover)
-		for package in `go list ./... | sed "s#^_${PWD}#${pkg}#"` ; do rm -f cover.out ; (eval `goad env` ; export GOPATH ; echo ==== ; (go test -coverprofile=cover.out $package) && echo ---- && go tool cover -func=cover.out && echo ---- && go tool cover -html=cover.out ; echo ====); done
+		for package in `go list ./... | sed "s#^_${PWD}#${pkg}#"` ; do rm -f cover.out ; (echo ==== ; (go test -coverprofile=cover.out $package) && echo ---- && go tool cover -func=cover.out && echo ---- && go tool cover -html=cover.out ; echo ====); done
 		rm -f cover.out
 		;;
 	*)
