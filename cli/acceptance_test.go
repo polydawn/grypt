@@ -61,15 +61,44 @@ func TestKeepSecret(t *testing.T) {
 			git("commit", "--allow-empty", "-m", "initial commit")()
 
 			Convey("When 'grypt keep-secret' is called with no args", func() {
-				Convey("We should exit 1", nil)
+				Convey("We should panic", func() {
+					So(func() {
+						Run(
+							"irrelephant",
+							"grypt",
+							"keep-secret",
+						)
+					}, ShouldPanicWith, "which files should we keep secret?")
+				})
 			})
 
 			Convey("When 'grypt keep-secret not-a-file' is called", func() {
-				Convey("We should exit 1", nil)
+				Convey("We should panic", func() {
+					So(func() {
+						Run(
+							"irrelephant",
+							"grypt",
+							"keep-secret",
+							"not-a-file",
+						)
+					}, ShouldPanicWith, "stat not-a-file: no such file or directory")
+					// this is not the greatest error message...
+				})
 			})
 
 			Convey("When 'grypt keep-secret some-dir' is called", func() {
-				Convey("We should exit 1", nil)
+				So(os.Mkdir("some-dir", 0755), ShouldBeNil)
+				SkipConvey("We should panic", func() {
+					So(func() {
+						Run(
+							"irrelephant",
+							"grypt",
+							"keep-secret",
+							"some-dir",
+						)
+					}, ShouldPanic)
+					// borken
+				})
 			})
 		}),
 	)
