@@ -8,9 +8,8 @@ import (
 	"polydawn.net/grypt/ext/blake2b"
 )
 
-/*
-	@implements Schema
-*/
+var _ Schema = Blowfish448blake2512ctr{}
+
 type Blowfish448blake2512ctr struct{}
 
 func (s Blowfish448blake2512ctr) Name() string   { return "blowfish448blake2512ctr" }

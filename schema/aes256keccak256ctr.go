@@ -8,9 +8,8 @@ import (
 	"code.google.com/p/go.crypto/sha3"
 )
 
-/*
-	@implements Schema
-*/
+var _ Schema = Aes256keccak256ctr{}
+
 type Aes256keccak256ctr struct{}
 
 func (s Aes256keccak256ctr) Name() string   { return "aes256keccak256ctr" }

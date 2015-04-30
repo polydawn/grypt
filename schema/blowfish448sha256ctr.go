@@ -8,9 +8,8 @@ import (
 	"code.google.com/p/go.crypto/blowfish"
 )
 
-/*
-	@implements Schema
-*/
+var _ Schema = Blowfish448sha256ctr{}
+
 type Blowfish448sha256ctr struct{}
 
 func (s Blowfish448sha256ctr) Name() string   { return "blowfish448sha256ctr" }

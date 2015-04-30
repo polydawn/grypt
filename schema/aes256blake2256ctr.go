@@ -8,9 +8,8 @@ import (
 	"polydawn.net/grypt/ext/blake2b"
 )
 
-/*
-	@implements Schema
-*/
+var _ Schema = Aes256blake2256ctr{}
+
 type Aes256blake2256ctr struct{}
 
 func (s Aes256blake2256ctr) Name() string   { return "aes256blake2256ctr" }

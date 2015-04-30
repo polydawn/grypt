@@ -7,9 +7,8 @@ import (
 	"io"
 )
 
-/*
-	@implements Schema
-*/
+var _ Schema = Aes256sha256ctr{}
+
 type Aes256sha256ctr struct{}
 
 func (s Aes256sha256ctr) Name() string   { return "aes256sha256ctr" }
